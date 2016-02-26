@@ -89,7 +89,7 @@ function share_subdir($uid, $lid, $id)
 				{
 					if(empty($res[0][0]) || (strcmp($res[0][0], $pin) == 0))
 					{
-						$fs = filesize("/var/www/box.mcsaatchi.ru/upload/f".$res[0][1]);
+						$fs = filesize(UPLOAD_DIR."/f".$res[0][1]);
 						if($fs != intval($res[0][3]))
 						{
 							$error_msg = "File corrupted";
@@ -99,7 +99,7 @@ function share_subdir($uid, $lid, $id)
 						header("Content-Type: application/octet-stream");
 						header("Content-Length: ".$fs);
 						//header("Content-Disposition: attachment; filename=\"".rawurlencode($res[0][1])."\"; filename*=\"utf-8''".rawurlencode($res[0][2]));
-						readfile("/var/www/box.mcsaatchi.ru/upload/f".$res[0][1]);
+						readfile(UPLOAD_DIR."/f".$res[0][1]);
 					}
 					else
 					{

@@ -20,11 +20,8 @@ sub addslashes
     return $text;
 }
 
-my $dir = '/var/www/box.mcsaatchi.ru/upload';
+my %config = do 'config.pl';
 my $driver = "mysql";
-my $database = "zxs";
-my $user = "zxs";
-my $password = "zimin";
 
 if(not exists $ENV{'HTTP_X_UPLOAD_FILENAME'}
 or not exists $ENV{'HTTP_X_UPLOAD_UID'}
@@ -42,14 +39,14 @@ if($pid !~ /^\d+$/) { die '{"result": 1, "status": "PID undefined"}'; }
 $filename =~ m/^.*?[\\\/]*([^\\\/]*)$/;
 my $fn = $1;
 
-my $dbh = DBI->connect("DBI:$driver:$database", $user, $password, {AutoCommit=>1,RaiseError=>1,PrintError=>0}) or die '{"result": 1, "status": "SQL: Error connect DB"}'; #$DBI::errstr;
+my $dbh = DBI->connect("DBI:$driver:$config{database}", $config{user}, $config{password}, {AutoCommit=>1,RaiseError=>1,PrintError=>0}) or die '{"result": 1, "status": "SQL: Error connect DB"}'; #$DBI::errstr;
 $dbh->do("SET NAMES 'utf8'") or die '{"result": 1, "status": "SQL: Error set names utf8"}'; #$DBI::errstr;
 
 my $sth = $dbh->prepare("INSERT INTO zxs_files (uid, pid, name, size, date, expire) VALUES (?, ?, ?, 0, NOW(), DATE_ADD(CURDATE(), INTERVAL 3 MONTH))") or die '{"result": 1, "status": "SQL: Error insert file"}'; #$dbh->errstr;
 $sth->execute($uid, $pid, $fn) or die '{"result": 1, "status": "SQL: Error insert file"}'; #$dbh->errstr;
 my $id = $sth->{mysql_insertid};
 
-open(LOCAL, ">$dir/f$id") or die '{"result": 1, "status": "Error create file"}';
+open(LOCAL, ">$config{upload_dir}/f$id") or die '{"result": 1, "status": "Error create file"}';
 while(<STDIN>)
 {
     print LOCAL $_;
@@ -57,7 +54,7 @@ while(<STDIN>)
 #close($file_handle);
 close(LOCAL);
 
-my $fs = -s "$dir/f$id";
+my $fs = -s "$config{upload_dir}/f$id";
 $sth = $dbh->prepare("UPDATE zxs_files SET size=? WHERE id = ? LIMIT 1") or die "ER"; #$dbh->errstr;
 $sth->execute($fs, $id) or die '{"result": 1, "status": "SQL: Error update file size"}'; #$dbh->errstr;
 

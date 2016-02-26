@@ -43,7 +43,7 @@ function delete_subdir($uid, $id)
 		}
 		else
 		{
-			unlink("/var/www/box.mcsaatchi.ru/upload/f".$row[0]);
+			unlink(UPLOAD_DIR."/f".$row[0]);
 		}
 	}
 }	
@@ -116,7 +116,7 @@ function delete_subdir($uid, $id)
 				$res = db_put($query);
 				if($type == 0)
 				{
-					unlink("/var/www/box.mcsaatchi.ru/upload/f".$id);
+					unlink(UPLOAD_DIR."/f".$id);
 				}
 				else
 				{
@@ -148,7 +148,7 @@ function delete_subdir($uid, $id)
 					$res = db_put($query);
 					if($type == 0)
 					{
-						unlink("/var/www/box.mcsaatchi.ru/upload/f".$id);
+						unlink(UPLOAD_DIR."/f".$id);
 					}
 					else
 					{

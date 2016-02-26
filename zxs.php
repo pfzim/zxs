@@ -6,7 +6,7 @@ function delete_expired()
 	{
 		$query = rpv_v2("UPDATE `zxs_files` SET `deleted` = 1 WHERE `id` = # LIMIT 1", array($row[0]));
 		db_put($query);
-		unlink("/var/www/box.mcsaatchi.ru/upload/f".$row[0]);
+		unlink(UPLOAD_DIR."/f".$row[0]);
 	}
 }
 
@@ -145,9 +145,9 @@ function delete_expired()
 			if($res !== FALSE)
 			{
 				header("Content-Type: application/octet-stream");
-				header("Content-Length: ".filesize("/var/www/box.mcsaatchi.ru/upload/f".$id));
+				header("Content-Length: ".filesize(UPLOAD_DIR."/f".$id));
 				header("Content-Disposition: attachment; filename=\"".rawurlencode($res[0][0])."\"; filename*=utf-8''".rawurlencode($res[0][0]));
-				readfile("/var/www/box.mcsaatchi.ru/upload/f".$id);
+				readfile(UPLOAD_DIR."/f".$id);
 			}
 			exit;
 		}
@@ -245,7 +245,7 @@ function delete_expired()
 		$files_on_server = $res[0][0];
 		$disk_usage = $res[0][1];
 	}
-	$free_space = disk_free_space("/var/www/box.mcsaatchi.ru/upload/");
+	$free_space = disk_free_space(UPLOAD_DIR."/");
 	
 	$query = rpv_v2("SELECT m.`id`, m.`name`, m.`size`, DATE_FORMAT(m.`date`, '%d.%m.%Y'), DATE_FORMAT(m.`expire`, '%d.%m.%Y'), m.`type`, m.`desc` FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`pid` = # AND m.`deleted` = 0 ORDER BY m.`type` DESC, m.`name`", array($uid, $id));
 	$res = db_select($query);
