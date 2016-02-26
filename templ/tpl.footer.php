@@ -1,3 +1,4 @@
+<?php if(!defined("ZXS_PROTECTED")) exit; ?>
 		<div id="popup" class="popup">
 			<a class="close" href = "#" onclick = "gi('popup').style.display='none';gi('fade').style.display='none'">Close</a>
 			<h3 id="caption" align="center">Message here</h3>			

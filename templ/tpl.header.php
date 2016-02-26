@@ -1,3 +1,4 @@
+<?php if(!defined("ZXS_PROTECTED")) exit; ?>
 <!DOCTYPE html>
 <html>
 	<head>

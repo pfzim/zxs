@@ -67,6 +67,7 @@ function delete_subdir($uid, $id)
 
 	session_start();
 	error_reporting(E_ALL);
+	define("ZXS_PROTECTED", "YES");
 
 	header("Content-Type: text/plain; charset=utf-8");
 

@@ -48,6 +48,7 @@ function share_subdir($uid, $lid, $id)
 
 	session_start();
 	error_reporting(E_ALL);
+	define("ZXS_PROTECTED", "YES");
 
 	header("Content-Type: text/html; charset=utf-8");
 	
