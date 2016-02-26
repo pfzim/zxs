@@ -8,7 +8,7 @@ function update_link($lid)
 	
 	$query = rpv_v2("SELECT m.`fid`, j1.`uid` FROM `zxs_link_files` AS m LEFT JOIN `zxs_links` AS j1 ON j1.`id` = m.`lid` LEFT JOIN `zxs_files` AS j2 ON j2.`id` = m.`fid` WHERE m.`lid` = # AND m.`pid` = 0 AND j2.`type` = 1 AND j1.`deleted` = 0 AND j2.`deleted` = 0", array($lid));
 	$res = db_select($query);
-	foreach($res as $row)
+	foreach(@$res as $row)
 	{
 		share_subdir($row[1], $lid, $row[0]);
 	}
@@ -18,7 +18,7 @@ function share_subdir($uid, $lid, $id)
 {
 	$query = rpv_v2("SELECT m.`id`, m.`type` FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`pid` = # AND m.`deleted` = 0", array($uid, $id));
 	$res = db_select($query);
-	foreach($res as $row)
+	foreach(@$res as $row)
 	{
 		$query = rpv_v2("INSERT INTO `zxs_link_files` (`lid`, `fid`, `pid`) VALUES (#, #, #)", array($lid, $row[0], $id));
 		db_put($query);

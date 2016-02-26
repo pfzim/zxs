@@ -2,7 +2,7 @@
 function delete_expired()
 {
 	$res = db_select("SELECT m.`id` FROM `zxs_files` AS m WHERE m.`deleted` = 0 AND m.`type` = 0 AND m.`expire` IS NOT NULL AND m.`expire` < CURDATE()");
-	foreach($res as $row)
+	foreach(@$res as $row)
 	{
 		$query = rpv_v2("UPDATE `zxs_files` SET `deleted` = 1 WHERE `id` = # LIMIT 1", array($row[0]));
 		db_put($query);
