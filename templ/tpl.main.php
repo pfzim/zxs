@@ -37,7 +37,7 @@
 					<a href="<?php eh("$self"); ?>" onclick="return f_delete(<?php eh($row[0]); ?>);">Delete</a>
 				</td>
 				<td class="command" id="<?php eh("desc".$row[0]); ?>" onclick="f_desc(this, <?php eh($row[0]); ?>);"><?php eh($row[6]); ?></td>
-				<td><?php eh($row[3]); ?></td>
+				<td title="<?php eh($row[7]); ?>"><?php eh($row[3]); ?></td>
 				<!--
 				<td><?php eh($row[4]); ?></td>
 				<td id="<?php eh("expire".$row[0]); ?>"><?php eh($row[4]); ?></td>
