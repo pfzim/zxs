@@ -1,0 +1,71 @@
+#!/usr/bin/perl
+
+print "Content-Type: text/plain; charset=utf-8\r\n\r\n";
+
+use strict;
+use warnings;
+use DBI;
+use Encode;
+use URI::Escape;
+
+sub addslashes
+{
+    my $text = shift;
+
+    $text =~ s/\\/\\\\/g;
+    $text =~ s/'/\\'/g;
+    $text =~ s/"/\\"/g;
+    $text =~ s/\\0/\\\\0/g;
+    
+    return $text;
+}
+
+my $dir = '/var/www/box.mcsaatchi.ru/upload';
+my $driver = "mysql";
+my $database = "zxs";
+my $user = "zxs";
+my $password = "zimin";
+
+if(not exists $ENV{'HTTP_X_UPLOAD_FILENAME'}
+or not exists $ENV{'HTTP_X_UPLOAD_UID'}
+or not exists $ENV{'HTTP_X_UPLOAD_PID'}) { die '{"result": 1, "status": "HTTP headers undefined"}'; }
+
+my $filename = uri_unescape($ENV{'HTTP_X_UPLOAD_FILENAME'});
+my $uid = $ENV{'HTTP_X_UPLOAD_UID'};
+my $pid = $ENV{'HTTP_X_UPLOAD_PID'};
+
+if($uid !~ /^\d+$/) { die '{"result": 1, "status": "UID undefined"}'; }
+if($pid !~ /^\d+$/) { die '{"result": 1, "status": "PID undefined"}'; }
+
+#print  decode('utf8', $a);
+
+$filename =~ m/^.*?[\\\/]*([^\\\/]*)$/;
+my $fn = $1;
+
+my $dbh = DBI->connect("DBI:$driver:$database", $user, $password, {AutoCommit=>1,RaiseError=>1,PrintError=>0}) or die '{"result": 1, "status": "SQL: Error connect DB"}'; #$DBI::errstr;
+$dbh->do("SET NAMES 'utf8'") or die '{"result": 1, "status": "SQL: Error set names utf8"}'; #$DBI::errstr;
+
+my $sth = $dbh->prepare("INSERT INTO zxs_files (uid, pid, name, size, date, expire) VALUES (?, ?, ?, 0, NOW(), DATE_ADD(CURDATE(), INTERVAL 3 MONTH))") or die '{"result": 1, "status": "SQL: Error insert file"}'; #$dbh->errstr;
+$sth->execute($uid, $pid, $fn) or die '{"result": 1, "status": "SQL: Error insert file"}'; #$dbh->errstr;
+my $id = $sth->{mysql_insertid};
+
+open(LOCAL, ">$dir/f$id") or die '{"result": 1, "status": "Error create file"}';
+while(<STDIN>)
+{
+    print LOCAL $_;
+}
+#close($file_handle);
+close(LOCAL);
+
+my $fs = -s "$dir/f$id";
+$sth = $dbh->prepare("UPDATE zxs_files SET size=? WHERE id = ? LIMIT 1") or die "ER"; #$dbh->errstr;
+$sth->execute($fs, $id) or die '{"result": 1, "status": "SQL: Error update file size"}'; #$dbh->errstr;
+
+$sth = $dbh->prepare("SELECT m.`id`, m.`name`, m.`size`, DATE_FORMAT(m.`date`, '%d.%m.%Y'), DATE_FORMAT(m.`expire`, '%d.%m.%Y'), m.`type`, m.`desc` FROM `zxs_files` AS m WHERE m.`id` = ? AND m.`uid` = ? AND m.`deleted` = 0 LIMIT 1");
+$sth->execute($id, $uid) or die '{"result": 1, "status": "SQL: Error get file data"}'; #$dbh->errstr;
+my @row = $sth->fetchrow_array();
+
+$sth->finish();
+$dbh->disconnect();
+
+print '{"result": 0, "id": '.$id.', "name": "'.addslashes($row[1]).'", "size": '.$row[2].', "desc": "'.addslashes($row[6]).'", "date": "'.$row[3].'", "expire": "'.$row[4].'"}';
