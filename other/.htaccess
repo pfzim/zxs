@@ -1,0 +1,9 @@
+RewriteEngine On
+
+#RewriteCond %{REQUEST_FILENAME} !-f
+#RewriteCond %{REQUEST_FILENAME} !-d
+#RewriteRule . index.php
+
+RewriteRule ^dl/(\d+)/(\d+)/.*$ link.php?action=download&id=$1&fid=$2
+RewriteRule ^link/(\d+)/?$ link.php?id=$1
+RewriteRule ^link/(\d+)/(\d+)/?$ link.php?id=$1&fid=$2
