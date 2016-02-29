@@ -348,4 +348,5 @@ table {
 {
     cursor: pointer;
     text-decoration: underline;
+    text-decoration-style: dashed;
 }
