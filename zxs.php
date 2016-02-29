@@ -226,7 +226,7 @@ function delete_expired()
 				}
 			}
 			
-			$query = rpv_v2("SELECT m.`id`, m.`name`, m.`size`, DATE_FORMAT(m.`date`, '%d.%m.%Y'), DATE_FORMAT(m.`expire`, '%d.%m.%Y'), m.`type`, m.`desc`, j1.`login` FROM `zxs_files` AS m LEFT JOIN `zxs_users` AS j1 ON j1.`id` = m.`uid` WHERE m.`pid` = # AND m.`deleted` = 0 ORDER BY m.`type` DESC, m.`name`", array($id));
+			$query = rpv_v2("SELECT m.`id`, m.`name`, m.`size`, DATE_FORMAT(m.`date`, '%d.%m.%Y'), DATE_FORMAT(m.`expire`, '%d.%m.%Y'), m.`type`, m.`desc`, j1.`login`, DATE_FORMAT(m.`date`, '%d.%m.%Y %k:%i:%s') FROM `zxs_files` AS m LEFT JOIN `zxs_users` AS j1 ON j1.`id` = m.`uid` WHERE m.`pid` = # AND m.`deleted` = 0 ORDER BY m.`type` DESC, m.`name`", array($id));
 			$res = db_select($query);
 			db_disconnect();
 			if($res === FALSE)

@@ -26,10 +26,10 @@
 				<td><?php eh($row[6]); ?></td>
 			<?php } else { ?>
 				<td><?php eh($row[1]); ?></td>
-				<td><?php eh(formatBytes($row[2]));?></td>
+				<td><?php eh(formatBytes($row[2], 2));?></td>
 				<td><?php eh($row[7]); ?></td>
 				<td><?php eh($row[6]); ?></td>
-				<td><?php eh($row[3]); ?></td>
+				<td title="<?php eh($row[8]); ?>"><?php eh($row[3]); ?></td>
 				<td><?php eh($row[4]); ?></td>
 			<?php } ?>
 			</tr>
