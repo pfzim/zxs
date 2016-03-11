@@ -73,7 +73,7 @@
 				var files = this.files;
 				for(var i=0, n=files.length;i<n;i++)
 				{
-					f_upload(<?php eh($uid); ?>, <?php eh($id); ?>, files[i], k++);
+					f_upload2(<?php eh($uid); ?>, <?php eh($id); ?>, files[i], k++, 0, 0);
 				}
 				return false;
 			};
@@ -125,7 +125,7 @@
 				
 				for(var i=0, n=files.length;i<n;i++)
 				{
-					f_upload(<?php eh($uid); ?>, <?php eh($id); ?>, files[i], k++);
+					f_upload2(<?php eh($uid); ?>, <?php eh($id); ?>, files[i], k++, 0, 0);
 				}
 			}
 

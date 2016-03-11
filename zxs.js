@@ -21,6 +21,23 @@ function formatbytes(bytes, decimals) {
    return (bytes / Math.pow(k, i)).toPrecision(dm) + ' ' + sizes[i];
 }
 
+if(!XMLHttpRequest.prototype.sendAsBinary) { 
+	XMLHttpRequest.prototype.sendAsBinary = function(datastr) {  
+		function byteValue(x)
+		{
+			return x.charCodeAt(0) & 0xff;
+		}
+		var ords = Array.prototype.map.call(datastr, byteValue);
+		var ui8a = new Uint8Array(ords);  
+		try {
+			this.send(ui8a);
+		}
+		catch(e) {
+			this.send(ui8a.buffer);
+		}  
+	};  
+}
+
 function f_xhr() {
   if (typeof XMLHttpRequest === 'undefined') {
 	XMLHttpRequest = function() {
@@ -586,7 +603,7 @@ function f_mkdir_event(el, id, event)
 		{
 			el.onblur = null;
 			var xhr = f_xhr();
-			if (xhr)
+			if(xhr)
 			{
 				xhr.open("post", "zxsa.php?action=mkdir&id="+id, true);
 				xhr.onreadystatechange = function(e) {
@@ -675,7 +692,7 @@ function f_expand(self, id, pid)
 	else
 	{
 		var xhr = f_xhr();
-		if (xhr)
+		if(xhr)
 		{
 			xhr.open("get", "zxsa.php?action=expand&id="+id+"&pid="+pid, true);
 			xhr.onreadystatechange = function(e) {
@@ -819,6 +836,195 @@ function f_upload(uid, id, file, k)
 		xhr.setRequestHeader("X-Upload-PID", id);
 		xhr.send(file);
 	}
+}
+
+function f_upload2(uid, id, file, k, file_pos, fid)
+{
+	var part_size = 1048576;
+	var xhr = f_xhr();
+
+	if(xhr)
+	{
+		xhr.open("POST", "/cgi-bin/upload2", true);
+		xhr.onreadystatechange =  function(uidd, idd, f, j, fp) {
+			return function(e) {
+			if(this.readyState == 4) {
+				if(this.status == 200)
+				{
+					var result = JSON.parse(this.responseText);
+					if(result.result)
+					{
+						gi("desc" + j).textContent =  result.status;
+						gi("button" + j).textContent = "";
+						//var row = gi("upload"+j);
+						//row.parentNode.removeChild(row);
+						xhttp[j] = null;
+					}
+					else
+					{
+						fp += part_size;
+						if(fp < f.size)
+						{
+							f_upload2(uidd, idd, f, j, fp, result.id);
+						}
+						else
+						{
+							var row = gi("upload" + j);
+							row.id = "row" + result.id;
+
+							row.cells[0].innerHTML = '<input type="checkbox" name="check" value="' + result.id + '"/>'
+
+							row.cells[1].id = "fname" + result.id;
+							row.cells[1].onclick = function() { f_rename(this, result.id); };
+							row.cells[1].textContent = result.name;
+							row.cells[1].className = 'command';
+
+							row.cells[2].innerHTML = '<a href="?action=download&id=' + result.id + '">' + formatbytes(result.size) + '</a>';
+
+							row.cells[3].innerHTML = '<a href="#" onclick="return f_share(' + result.id + ');">Share</a> <a href="#" onclick="return f_delete(' + result.id + ');">Delete</a>';
+
+							row.cells[4].id = "desc" + result.id;
+							row.cells[4].onclick = function() { f_desc(this, result.id); };
+							row.cells[4].textContent = result.desc;
+							row.cells[4].className = 'command';
+
+							row.cells[5].textContent = result.date;
+
+							row.cells[6].innerHTML = '<span id="expire'+result.id+'">'+escapeHtml(result.expire)+'</span>';
+							row.cells[6].onclick = function() { f_expire_cal(this, result.id); };
+							row.cells[6].className = 'command';
+							xhttp[j] = null;
+						}
+					}
+				}
+				else
+				{
+					gi("desc" + j).textContent = "Upload failed (code: " + this.status + ")";
+					gi("button" + j).textContent = "";
+					//var row = gi("upload" + j);
+					//row.parentNode.removeChild(row);
+					xhttp[j] = null;
+				}
+			}
+		}}(uid, id, file, k, file_pos);
+		xhr.upload.onprogress = function(j, fp, fs) {
+			return function(event) {
+				var pr = parseInt((100*(fp+event.loaded))/fs, 10);
+				if(pr >= 100) pr = 99;
+				gi("bar"+j).style.width = pr + '%';
+				gi("percent"+j).textContent = pr + '%';
+				gi("size"+j).textContent = formatbytes(event.loaded+fp, 3) + '/' + formatbytes(fs, 2);
+			};
+		}(k, file_pos, file.size);
+
+		xhttp[k] = xhr;
+		if(fid == 0)
+		{
+			var table = gi("table");
+			var row = table.insertRow(-1);
+			row.id = "upload"+k;
+			var cell = row.insertCell(0);
+			cell = row.insertCell(1);
+			cell.textContent = file.name;
+			cell = row.insertCell(2);
+			cell.id = "size" + k;
+			cell.textContent = '0/0';
+			cell = row.insertCell(3);
+			cell.id = "button" + k;
+			cell.innerHTML = '<a href="#" onclick="xhttp[' + k + '].abort(); return false;">Cancel</a>';
+			cell = row.insertCell(4);
+			cell.id = "desc" + k;
+			cell.innerHTML = '<div class="progress"><div id="bar' + k + '" class="bar"></div><div id="percent' + k + '" class="percent">0%</div></div>';
+			cell = row.insertCell(5);
+			cell = row.insertCell(6);
+		}
+
+		xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+		xhr.setRequestHeader("X-Upload-FileName", encodeURIComponent(file.name));
+		xhr.setRequestHeader("X-Upload-FileSize", encodeURIComponent(file.size));
+		xhr.setRequestHeader("X-Upload-UID", uid);
+		xhr.setRequestHeader("X-Upload-PID", id);
+		xhr.setRequestHeader("X-Upload-ID", fid);
+
+		if((fid != 0) || (file.size > 4*1024*1024))
+		{
+			var blob;
+			var load_size;
+			if(file_pos+part_size > file.size)
+			{
+				load_size = file.size;
+			}
+			else
+			{
+				load_size = file_pos+part_size;
+			}
+			if(file.slice)
+			{
+				blob = file.slice(file_pos, load_size);
+			}
+			else if(file.webkitSlice)
+			{
+				blob = file.webkitSlice(file_pos, load_size);
+			}
+			else if(file.mozSlice)
+			{
+				blob = file.mozSlice(file_pos, load_size);
+			}
+
+			xhr.send(blob);
+		}
+		else
+		{
+			xhr.send(file);
+		}
+	}
+}
+
+function f_upload21(uid, id, file, k)
+{
+	var loaded = 0;
+	var step = 100*1024*1024;
+	var total = file.size;
+	var start = 0;
+
+	var reader = new FileReader();
+
+	reader.onload = function(e){
+			var xhr = f_xhr();
+			xhr.upload.onload = function() {
+				loaded += step;
+				progress.value = (loaded/total) * 100;
+				if(loaded <= total)
+				{
+					blob = file.slice(loaded, loaded+step);
+					reader.readAsBinaryString(blob);
+				}
+				else
+				{
+					loaded = total;
+				}
+			};
+
+			xhr.open("POST", "/upload2");
+			xhr.overrideMimeType("application/octet-stream");
+			xhr.sendAsBinary(e.target.result);
+	};
+
+	var blob;
+	if(file.slice)
+	{
+		blob = file.slice(start, step);
+	}
+	else if(file.webkitSlice)
+	{
+		blob = file.webkitSlice(start, step);
+	}
+	else if(file.mozSlice)
+	{
+		blob = file.mozSlice(start, step);
+	}
+	
+	reader.readAsBinaryString(blob);
 }
 
 function pad(num, size)
