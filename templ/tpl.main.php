@@ -65,76 +65,7 @@
 
 		<div class="server-info">Free space: <?php eh(formatBytes($free_space, 1));?>, Used space: <?php eh(formatBytes($disk_usage, 1));?> (<?php eh($files_on_server);?> files)</div>
    
-		<script>
-			var xhttp = [];
-			var k = 0;
-			
-			gi("upload").onchange = function() {
-				var files = this.files;
-				for(var i=0, n=files.length;i<n;i++)
-				{
-					f_upload2(<?php eh($uid); ?>, <?php eh($id); ?>, files[i], k++, 0, 0);
-				}
-				return false;
-			};
-
-			window.onbeforeunload = function (e) {
-				for(var i=0, n=xhttp.length;i<n;i++)
-				{
-					if(xhttp[i])
-					{
-						var message = "Your have active uploads. Are you sure want to leave the page and terminate all uploads?";
-						f_popup('Confirm exit', message);
-
-						if (typeof e == "undefined")
-						{
-							e = window.event;
-						}
-						if (e)
-						{
-							e.returnValue = message;
-						}
-						return message;
-					}
-				}
-			};
-
-			function DragLeave(e)
-			{
-				gi('dropzone').className = "";
-			}
-			
-			function DragOver(e)
-			{
-				e.stopPropagation();
-				e.preventDefault();
-				gi('dropzone').className = (e.type == "dragover" ? "hover" : "");
-			}
-
-			function FileDrop(e)
-			{
-				DragOver(e);
-
-				var files = e.target.files || e.dataTransfer.files;
-
-				if (typeof files === 'undefined')
-					return;
-					
-				e.stopPropagation();
-				e.preventDefault();
-				
-				for(var i=0, n=files.length;i<n;i++)
-				{
-					f_upload2(<?php eh($uid); ?>, <?php eh($id); ?>, files[i], k++, 0, 0);
-				}
-			}
-
-			var filedrag = document.getElementsByTagName('body')[0];
-
-			filedrag.addEventListener("dragover", DragOver, false);
-			filedrag.addEventListener("dragleave", DragLeave, false);
-			filedrag.addEventListener("drop", FileDrop, false);
-		
-
+		<script type="text/javascript">
+			zxs_init(<?php eh($uid); ?>, <?php eh($id); ?>);
 		</script>
 <?php include("tpl.footer.php"); ?>

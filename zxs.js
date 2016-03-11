@@ -1,3 +1,6 @@
+var xhttp = [];
+var k = 0;
+
 function gi(name)
 {
 	return document.getElementById(name);
@@ -740,7 +743,7 @@ function f_expand(self, id, pid)
 	return false;
 }
 
-function f_upload(uid, id, file, k)
+function f_upload0(uid, id, file, k)
 {
 	var xhr = f_xhr();
 
@@ -838,9 +841,9 @@ function f_upload(uid, id, file, k)
 	}
 }
 
-function f_upload2(uid, id, file, k, file_pos, fid)
+function f_upload(uid, id, file, k, file_pos, fid)
 {
-	var part_size = 1048576;
+	var part_size = 33554432;
 	var xhr = f_xhr();
 
 	if(xhr)
@@ -865,7 +868,7 @@ function f_upload2(uid, id, file, k, file_pos, fid)
 						fp += part_size;
 						if(fp < f.size)
 						{
-							f_upload2(uidd, idd, f, j, fp, result.id);
+							f_upload(uidd, idd, f, j, fp, result.id);
 						}
 						else
 						{
@@ -879,7 +882,7 @@ function f_upload2(uid, id, file, k, file_pos, fid)
 							row.cells[1].textContent = result.name;
 							row.cells[1].className = 'command';
 
-							row.cells[2].innerHTML = '<a href="?action=download&id=' + result.id + '">' + formatbytes(result.size) + '</a>';
+							row.cells[2].innerHTML = '<a href="?action=download&id=' + result.id + '">' + formatbytes(result.size, 2) + '</a>';
 
 							row.cells[3].innerHTML = '<a href="#" onclick="return f_share(' + result.id + ');">Share</a> <a href="#" onclick="return f_delete(' + result.id + ');">Delete</a>';
 
@@ -946,7 +949,7 @@ function f_upload2(uid, id, file, k, file_pos, fid)
 		xhr.setRequestHeader("X-Upload-PID", id);
 		xhr.setRequestHeader("X-Upload-ID", fid);
 
-		if((fid != 0) || (file.size > 4*1024*1024))
+		if((fid != 0) || (file.size > 268435456))
 		{
 			var blob;
 			var load_size;
@@ -980,7 +983,7 @@ function f_upload2(uid, id, file, k, file_pos, fid)
 	}
 }
 
-function f_upload21(uid, id, file, k)
+function f_upload_example(uid, id, file, k)
 {
 	var loaded = 0;
 	var step = 100*1024*1024;
@@ -1382,4 +1385,75 @@ function f_calendar_display(div, month, year)
 	}
 	
 	div.appendChild(table);
+}
+
+function DragLeave(e)
+{
+	gi('dropzone').className = "";
+}
+
+function DragOver(e)
+{
+	e.stopPropagation();
+	e.preventDefault();
+	gi('dropzone').className = (e.type == "dragover" ? "hover" : "");
+}
+
+function FileDrop(e, uid, id)
+{
+	DragOver(e);
+
+	var files = e.target.files || e.dataTransfer.files;
+
+	if (typeof files === 'undefined')
+		return;
+		
+	e.stopPropagation();
+	e.preventDefault();
+	
+	for(var i=0, n=files.length;i<n;i++)
+	{
+		f_upload(uid, id, files[i], k++, 0, 0);
+	}
+}
+
+function zxs_init(uid, id)
+{
+			gi("upload").onchange = function(uidd, idd) {
+				return function(event) {
+					var files = this.files;
+					for(var i=0, n=files.length;i<n;i++)
+					{
+						f_upload(uidd, idd, files[i], k++, 0, 0);
+					}
+					return false;
+				}
+			} (uid, id);
+
+			window.onbeforeunload = function (e) {
+				for(var i=0, n=xhttp.length;i<n;i++)
+				{
+					if(xhttp[i])
+					{
+						var message = "Your have active uploads. Are you sure want to leave the page and terminate all uploads?";
+						f_popup('Confirm exit', message);
+
+						if (typeof e == "undefined")
+						{
+							e = window.event;
+						}
+						if (e)
+						{
+							e.returnValue = message;
+						}
+						return message;
+					}
+				}
+			};
+
+			var filedrag = document.getElementsByTagName('body')[0];
+
+			filedrag.addEventListener("dragover", DragOver, false);
+			filedrag.addEventListener("dragleave", DragLeave, false);
+			filedrag.addEventListener("drop", function(event) { FileDrop(event, uid, id); }, false);
 }
