@@ -848,12 +848,13 @@ function f_upload(uid, id, file, k, file_pos, fid)
 
 	if(xhr)
 	{
-		xhr.open("POST", "/cgi-bin/upload2", true);
+		xhr.open("POST", "/cgi-bin/upload", true);
 		xhr.onreadystatechange =  function(uidd, idd, f, j, fp) {
 			return function(e) {
 			if(this.readyState == 4) {
 				if(this.status == 200)
 				{
+					//alert(this.responseText);
 					var result = JSON.parse(this.responseText);
 					if(result.result)
 					{
@@ -866,7 +867,7 @@ function f_upload(uid, id, file, k, file_pos, fid)
 					else
 					{
 						fp += part_size;
-						if(fp < f.size)
+						if((file.size > 268435456) && (fp < f.size))
 						{
 							f_upload(uidd, idd, f, j, fp, result.id);
 						}

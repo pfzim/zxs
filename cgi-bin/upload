@@ -36,7 +36,7 @@ sub addslashes
     return $text;
 }
 
-my %config = do 'config2.pl';
+my %config = do 'config.pl';
 my $driver = "mysql";
 
 if(not exists $ENV{'HTTP_X_UPLOAD_FILENAME'}

@@ -6,7 +6,7 @@
 		<title>ZXS</title>
 		<link type="text/css" href="/templ/style.css" rel="stylesheet" />
 		<?php if($uid) { ?>
-		<script type="text/javascript" src="zxs.js"></script>
+		<script type="text/javascript" src="/zxs.js"></script>
 		<?php } ?>
 	</head>
 	<body>

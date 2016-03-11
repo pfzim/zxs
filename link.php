@@ -114,10 +114,57 @@ function share_subdir($uid, $lid, $id)
 							include('templ/tpl.error.php');
 							exit;
 						}
-						header("Content-Type: application/octet-stream");
-						header("Content-Length: ".$fs);
-						//header("Content-Disposition: attachment; filename=\"".rawurlencode($res[0][1])."\"; filename*=\"utf-8''".rawurlencode($res[0][2]));
-						readfile(UPLOAD_DIR."/f".$res[0][1]);
+						if(isset($_SERVER['HTTP_RANGE']))
+						{
+							if(!preg_match('/^bytes=\d+-\d*$/i', $_SERVER['HTTP_RANGE']))
+							{
+								header('HTTP/1.1 416 Requested Range Not Satisfiable');
+								header('Content-Range: bytes */'.$fs);
+								exit;
+							}
+							list($pos_s, $pos_e) = explode('-', substr($_SERVER['HTTP_RANGE'], 6));
+							$pos_s = intval($pos_s);
+							$pos_e = intval($pos_e);
+							if(!$pos_e)
+							{
+								$pos_e = $fs - 1;
+							}
+							if($pos_s > $pos_e)
+							{
+								header('HTTP/1.1 416 Requested Range Not Satisfiable');
+								header('Content-Range: bytes */'.$fs);
+								exit;
+							}
+							
+							header('HTTP/1.1 206 Partial Content');
+							header('Content-Range: bytes '.$pos_s.'-'.$pos_e.'/'.$fs);
+							$fh = fopen(UPLOAD_DIR."/f".$res[0][1], 'rb');
+							if(fseek($fh, $pos_s, SEEK_SET) == 0)
+							{
+								while($pos_s < $pos_e)
+								{
+									//echo fgetc($fh);
+									//$pos_s++;
+									if(($pos_s + 1048576) > $pos_e)
+									{
+										echo fread($fh, $pos_e - $pos_s);
+										break;
+									}
+
+									echo fread($fh, 1048576);
+									$pos_s += 1048576;
+								}
+							}
+							fclose($fh);
+						}
+						else
+						{
+							header("Content-Type: application/octet-stream");
+							header("Content-Length: ".$fs);
+							//header("Content-Disposition: attachment; filename=\"".rawurlencode($res[0][1])."\"; filename*=\"utf-8''".rawurlencode($res[0][2]));
+							readfile(UPLOAD_DIR."/f".$res[0][1]);
+						}
+						exit;
 					}
 					else
 					{
