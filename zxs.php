@@ -17,6 +17,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// TODO: Delete partial uploaded files
+
 function delete_expired()
 {
 	$res = db_select("SELECT m.`id` FROM `zxs_files` AS m WHERE m.`deleted` = 0 AND m.`type` = 0 AND m.`expire` IS NOT NULL AND m.`expire` < CURDATE()");
@@ -28,6 +30,7 @@ function delete_expired()
 	}
 }
 
+	session_name("ZXSID");
 	session_start();
 	error_reporting(E_ALL);
 	define("ZXS_PROTECTED", "YES");

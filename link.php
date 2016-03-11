@@ -46,6 +46,7 @@ function share_subdir($uid, $lid, $id)
 	}
 }
 
+	session_name("ZXSID");
 	session_start();
 	error_reporting(E_ALL);
 	define("ZXS_PROTECTED", "YES");

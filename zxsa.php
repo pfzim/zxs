@@ -65,6 +65,7 @@ function delete_subdir($uid, $id)
 	}
 }	
 
+	session_name("ZXSID");
 	session_start();
 	error_reporting(E_ALL);
 	define("ZXS_PROTECTED", "YES");
