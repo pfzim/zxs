@@ -867,7 +867,7 @@ function f_upload(uid, id, file, k, file_pos, fid)
 					else
 					{
 						fp += part_size;
-						if((file.size > 268435456) && (fp < f.size))
+						if((f.size > 268435456) && (fp < f.size))
 						{
 							f_upload(uidd, idd, f, j, fp, result.id);
 						}
