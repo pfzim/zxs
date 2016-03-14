@@ -16,7 +16,7 @@
 				<td colspan="5"><a href="<?php eh("/link/$id/$uplevel/"); ?>"><b>Up level</b></a></td>
 			</tr>
 		<?php } ?>
-		<?php foreach(@$res as $row) { ?>
+		<?php if($res !== FALSE) foreach($res as $row) { ?>
 			<tr>
 			<?php if($row[2]) { ?>
 				<td><a href="<?php eh("/link/$id/$row[1]/"); ?>"><b><?php eh($row[3]); ?></b></a></td>

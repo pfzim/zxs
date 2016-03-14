@@ -18,7 +18,7 @@
 				<td colspan="7"><a href="<?php eh("$self?id=$uplevel"); ?>"><b>Up level</b></a></td>
 			</tr>
 		<?php } ?>
-		<?php $i = 0; foreach(@$res as $row) { $i++; ?>
+		<?php $i = 0; if($res !== FALSE) foreach($res as $row) { $i++; ?>
 			<tr id="<?php eh("row".$row[0]);?>">
 				<td><input type="checkbox" name="check" value="<?php eh($row[0]); ?>"/></td>
 			<?php if(intval($row[5]) == 1) { ?>

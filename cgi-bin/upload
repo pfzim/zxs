@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-#	ZXS - simple web service for sharing files
+#    ZXS - simple web service for sharing files
 #    Copyright (C) 2016 Dmitry V. Zimin
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -36,6 +36,8 @@ sub addslashes
     return $text;
 }
 
+sub print_exit { print @_; exit; }
+
 my %config = do 'config.pl';
 my $driver = "mysql";
 
@@ -43,7 +45,7 @@ if(not exists $ENV{'HTTP_X_UPLOAD_FILENAME'}
 or not exists $ENV{'HTTP_X_UPLOAD_FILESIZE'}
 or not exists $ENV{'HTTP_X_UPLOAD_ID'}
 or not exists $ENV{'HTTP_X_UPLOAD_UID'}
-or not exists $ENV{'HTTP_X_UPLOAD_PID'}) { die '{"result": 1, "status": "HTTP headers undefined"}'; }
+or not exists $ENV{'HTTP_X_UPLOAD_PID'}) { print_exit '{"result": 1, "status": "HTTP headers undefined"}'; }
 
 my $filename = uri_unescape($ENV{'HTTP_X_UPLOAD_FILENAME'});
 my $fsz = $ENV{'HTTP_X_UPLOAD_FILESIZE'};
@@ -51,36 +53,34 @@ my $uid = $ENV{'HTTP_X_UPLOAD_UID'};
 my $pid = $ENV{'HTTP_X_UPLOAD_PID'};
 my $id = $ENV{'HTTP_X_UPLOAD_ID'};
 
-if($id !~ /^\d+$/) { die '{"result": 1, "status": "ID undefined"}'; }
-if($uid !~ /^\d+$/) { die '{"result": 1, "status": "UID undefined"}'; }
-if($pid !~ /^\d+$/) { die '{"result": 1, "status": "PID undefined"}'; }
-if($fsz !~ /^\d+$/) { die '{"result": 1, "status": "FileSize undefined"}'; }
-
-#print  decode('utf8', $a);
+if($id !~ /^\d+$/) { print_exit '{"result": 1, "status": "ID undefined"}'; }
+if($uid !~ /^\d+$/) { print_exit '{"result": 1, "status": "UID undefined"}'; }
+if($pid !~ /^\d+$/) { print_exit '{"result": 1, "status": "PID undefined"}'; }
+if($fsz !~ /^\d+$/) { print_exit '{"result": 1, "status": "FileSize undefined"}'; }
 
 $filename =~ m/^.*?[\\\/]*([^\\\/]*)$/;
 my $fn = $1;
 
-my $dbh = DBI->connect("DBI:$driver:$config{database}", $config{user}, $config{password}, {AutoCommit=>1,RaiseError=>1,PrintError=>0}) or die '{"result": 1, "status": "SQL: Error connect DB"}'; #$DBI::errstr;
-$dbh->do("SET NAMES 'utf8'") or die '{"result": 1, "status": "SQL: Error set names utf8"}'; #$DBI::errstr;
+my $dbh = DBI->connect("DBI:$driver:$config{database}", $config{user}, $config{password}, {AutoCommit=>1,RaiseError=>1,PrintError=>0}) or print_exit '{"result": 1, "status": "SQL: Error connect DB"}';
+$dbh->do("SET NAMES 'utf8'") or print_exit '{"result": 1, "status": "SQL: Error set names utf8"}';
 
 my $sth;
 
 if(!$id)
 {
-    $sth = $dbh->prepare("INSERT INTO zxs_files (uid, pid, name, size, date, expire, deleted) VALUES (?, ?, ?, 0, NOW(), DATE_ADD(CURDATE(), INTERVAL 3 MONTH), 1)") or die '{"result": 1, "status": "SQL: Error insert file"}'; #$dbh->errstr;
-    $sth->execute($uid, $pid, $fn) or die '{"result": 1, "status": "SQL: Error insert file"}'; #$dbh->errstr;
+    $sth = $dbh->prepare("INSERT INTO zxs_files (uid, pid, name, size, date, expire, type, deleted) VALUES (?, ?, ?, 0, NOW(), DATE_ADD(CURDATE(), INTERVAL 3 MONTH), 3, 1)") or print_exit '{"result": 1, "status": "SQL: Error insert file"}';
+    $sth->execute($uid, $pid, $fn) or print_exit '{"result": 1, "status": "SQL: Error insert file"}';
     $id = $sth->{mysql_insertid};
     $sth->finish();
-    open(LOCAL, ">$config{upload_dir}/f$id") or die '{"result": 1, "status": "Error create file"}';
+    open(LOCAL, ">$config{upload_dir}/f$id") or print_exit '{"result": 1, "status": "Error create file"}';
 }
 else
 {
-    $sth = $dbh->prepare("SELECT m.`id` FROM `zxs_files` AS m WHERE m.`id` = ? AND m.`uid` = ? AND m.`pid` = ? AND m.`deleted` = 1 LIMIT 1");
-    $sth->execute($id, $uid, $pid) or die '{"result": 1, "status": "SQL: Error get file data"}'; #$dbh->errstr;
-    $sth->rows() or die '{"result": 1, "status": "SQL: Error get file data"}';
+    $sth = $dbh->prepare("SELECT m.`id` FROM `zxs_files` AS m WHERE m.`id` = ? AND m.`uid` = ? AND m.`pid` = ? AND m.`type` = 3 AND m.`deleted` = 1 LIMIT 1") or print_exit '{"result": 1, "status": "SQL: Error get file data"}';
+    $sth->execute($id, $uid, $pid) or print_exit '{"result": 1, "status": "SQL: Error get file data"}';
+    $sth->rows() or print_exit '{"result": 1, "status": "SQL: Error get file data"}';
     $sth->finish();
-    open(LOCAL, ">>$config{upload_dir}/f$id") or die '{"result": 1, "status": "Error open file"}';
+    open(LOCAL, ">>$config{upload_dir}/f$id") or print_exit '{"result": 1, "status": "Error open file"}';
 }
 
 while(<STDIN>)
@@ -93,13 +93,13 @@ close(LOCAL);
 my $fs = -s "$config{upload_dir}/f$id";
 if($fs == $fsz)
 {
-    $sth = $dbh->prepare("UPDATE zxs_files SET size=?, deleted=0 WHERE id = ? LIMIT 1") or die "ER"; #$dbh->errstr;
-    $sth->execute($fs, $id) or die '{"result": 1, "status": "SQL: Error update file size"}'; #$dbh->errstr;
+    $sth = $dbh->prepare("UPDATE zxs_files SET size=?, type=0, deleted=0 WHERE id = ? AND type=3 AND deleted=1 LIMIT 1") or print_exit '{"result": 1, "status": "SQL: Error update file size"}';
+    $sth->execute($fs, $id) or print_exit '{"result": 1, "status": "SQL: Error update file size"}';
     $sth->finish();
 }
 
-$sth = $dbh->prepare("SELECT m.`id`, m.`name`, m.`size`, DATE_FORMAT(m.`date`, '%d.%m.%Y'), DATE_FORMAT(m.`expire`, '%d.%m.%Y'), m.`type`, m.`desc` FROM `zxs_files` AS m WHERE m.`id` = ? AND m.`uid` = ? AND m.`deleted` = 0 LIMIT 1");
-$sth->execute($id, $uid) or die '{"result": 1, "status": "SQL: Error get file data"}'; #$dbh->errstr;
+$sth = $dbh->prepare("SELECT m.`id`, m.`name`, m.`size`, DATE_FORMAT(m.`date`, '%d.%m.%Y'), DATE_FORMAT(m.`expire`, '%d.%m.%Y'), m.`type`, m.`desc` FROM `zxs_files` AS m WHERE m.`id` = ? AND m.`uid` = ? LIMIT 1") or print_exit '{"result": 1, "status": "SQL: Error get file data"}';
+$sth->execute($id, $uid) or print_exit '{"result": 1, "status": "SQL: Error get file data"}';
 my @row = $sth->fetchrow_array();
 $sth->finish();
 

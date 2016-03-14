@@ -10,7 +10,7 @@
 			</tr>
 			</thead>
 			<tbody>
-		<?php $i = 0; foreach(@$res as $row) { $i++; ?>
+		<?php $i = 0; if($res !== FALSE) foreach($res as $row) { $i++; ?>
 		<tr id="<?php eh("row".$row[0]);?>">
 			<td><a href="<?php eh("/link/$row[0]/"); ?>"><?php eh("http://{$_SERVER['HTTP_HOST']}/link/$row[0]/"); ?></a></td>
 			<td><?php eh($row[1]);?></td>

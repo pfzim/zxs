@@ -984,53 +984,6 @@ function f_upload(uid, id, file, k, file_pos, fid)
 	}
 }
 
-function f_upload_example(uid, id, file, k)
-{
-	var loaded = 0;
-	var step = 100*1024*1024;
-	var total = file.size;
-	var start = 0;
-
-	var reader = new FileReader();
-
-	reader.onload = function(e){
-			var xhr = f_xhr();
-			xhr.upload.onload = function() {
-				loaded += step;
-				progress.value = (loaded/total) * 100;
-				if(loaded <= total)
-				{
-					blob = file.slice(loaded, loaded+step);
-					reader.readAsBinaryString(blob);
-				}
-				else
-				{
-					loaded = total;
-				}
-			};
-
-			xhr.open("POST", "/upload2");
-			xhr.overrideMimeType("application/octet-stream");
-			xhr.sendAsBinary(e.target.result);
-	};
-
-	var blob;
-	if(file.slice)
-	{
-		blob = file.slice(start, step);
-	}
-	else if(file.webkitSlice)
-	{
-		blob = file.webkitSlice(start, step);
-	}
-	else if(file.mozSlice)
-	{
-		blob = file.mozSlice(start, step);
-	}
-	
-	reader.readAsBinaryString(blob);
-}
-
 function pad(num, size)
 {
     var s = num+"";
