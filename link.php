@@ -46,6 +46,74 @@ function share_subdir($uid, $lid, $id)
 	}
 }
 
+function tar_subdir($lid, $id, $path)
+{
+	$query = rpv_v2("SELECT j2.`id`, j2.`type`, j2.`name`, j2.`size`, j2.`date`, m.`pid` FROM `zxs_link_files` AS m LEFT JOIN `zxs_links` AS j1 ON j1.`id` = m.`lid` LEFT JOIN `zxs_files` AS j2 ON j2.`id` = m.`fid` WHERE m.`lid` = # AND m.`pid` = # AND j2.`deleted` = 0 AND j1.`deleted` = 0 ORDER BY j2.`type` DESC, j2.`name`", array($lid, $id));
+	$res = db_select($query);
+	if($res !== FALSE)
+	{
+		foreach($res as $row)
+		{
+			if(intval($row[1]) == 1)
+			{
+				$first = pack("a100a8a8a8a12A12", $path.$row[2], "0040777 ", "0000000 ", "0000000 ", sprintf("%11s ", DecOct(0)), sprintf("%11s", DecOct(strtotime($row[4]))));
+				$last = pack("a1a100a6a2a32a32a8a8a155a12", "5", "", "ustar", "00", "", "", "", "", "", "");
+				$v_checksum = 0;
+				for ($i=0; $i<148; $i++)
+				{
+				  $v_checksum += ord(substr($first,$i,1));
+				}
+				for ($i=148; $i<156; $i++)
+				{
+				  $v_checksum += ord(' ');
+				}
+				for ($i=156, $j=0; $i<512; $i++, $j++)
+				{
+				  $v_checksum += ord(substr($last,$j,1));
+				}
+				echo $first;
+				$v_checksum = sprintf("%6s ", DecOct($v_checksum));
+				echo pack("a8", $v_checksum);
+				echo $last;
+				tar_subdir($lid, $row[0], $path.$row[2].'/');
+			}
+			else
+			{
+				$fs = filesize(UPLOAD_DIR."/f".$row[0]);
+				$first = pack("a100a8a8a8a12A12", $path.$row[2], "0100777 ", "0000000 ", "0000000 ", sprintf("%11s ", DecOct($fs)), sprintf("%11s", DecOct(strtotime($row[4]))));
+				$last = pack("a1a100a6a2a32a32a8a8a155a12", "0", "", "ustar", "00", "", "", "", "", "", "");
+				$v_checksum = 0;
+				for ($i=0; $i<148; $i++)
+				{
+				  $v_checksum += ord(substr($first,$i,1));
+				}
+				for ($i=148; $i<156; $i++)
+				{
+				  $v_checksum += ord(' ');
+				}
+				for ($i=156, $j=0; $i<512; $i++, $j++)
+				{
+				  $v_checksum += ord(substr($last,$j,1));
+				}
+				echo $first;
+				$v_checksum = sprintf("%6s ", DecOct($v_checksum));
+				echo pack("a8", $v_checksum);
+				echo $last;
+				readfile(UPLOAD_DIR."/f".$row[0]);
+				if($fs % 512 > 0)
+				{
+					$i = 512 - ($fs % 512);
+					while($i > 0)
+					{
+						echo chr(0);
+						$i--;
+					}
+				}
+			}
+		}
+	}
+}
+
 	session_name("ZXSID");
 	session_start();
 	error_reporting(E_ALL);
@@ -175,6 +243,86 @@ function share_subdir($uid, $lid, $id)
 			}
 			$error_msg = "File not found";
 			include('templ/tpl.error.php');
+			exit;
+		}
+		case 'tar':
+		{
+			if($id)
+			{
+				db_connect();
+				$query = rpv_v2("SELECT j1.`pin`, j2.`id`, j2.`type`, j2.`name`, j2.`size`, j2.`date`, m.`pid` FROM `zxs_link_files` AS m LEFT JOIN `zxs_links` AS j1 ON j1.`id` = m.`lid` LEFT JOIN `zxs_files` AS j2 ON j2.`id` = m.`fid` WHERE m.`lid` = # AND m.`pid` = # AND j2.`deleted` = 0 AND j1.`deleted` = 0 ORDER BY j2.`type` DESC, j2.`name`", array($id, $fid));
+				$res = db_select($query);
+				if($res !== FALSE)
+				{
+					if(empty($res[0][0]) || (strcmp($res[0][0], $pin) == 0))
+					{
+						header("Content-Type: application/octet-stream");
+						//header("Content-Disposition: attachment; filename=\"zxs-link-archive-".$id.".tar\";");
+
+						foreach($res as $row)
+						{
+							if(intval($row[2]) == 1)
+							{
+								$first = pack("a100a8a8a8a12A12", $row[3], "0040777 ", "0000000 ", "0000000 ", sprintf("%11s ", DecOct(0)), sprintf("%11s", DecOct(strtotime($row[5]))));
+								$last = pack("a1a100a6a2a32a32a8a8a155a12", "5", "", "ustar", "00", "", "", "", "", "", "");
+								$v_checksum = 0;
+								for ($i=0; $i<148; $i++)
+								{
+								  $v_checksum += ord(substr($first,$i,1));
+								}
+								for ($i=148; $i<156; $i++)
+								{
+								  $v_checksum += ord(' ');
+								}
+								for ($i=156, $j=0; $i<512; $i++, $j++)
+								{
+								  $v_checksum += ord(substr($last,$j,1));
+								}
+								echo $first;
+							    $v_checksum = sprintf("%6s ", DecOct($v_checksum));
+								echo pack("a8", $v_checksum);
+								echo $last;
+								tar_subdir($id, $row[1], $row[3].'/');
+							}
+							else
+							{
+								$fs = filesize(UPLOAD_DIR."/f".$row[1]);
+								$first = pack("a100a8a8a8a12A12", $row[3], "0100777 ", "0000000 ", "0000000 ", sprintf("%11s ", DecOct($fs)), sprintf("%11s", DecOct(strtotime($row[5]))));
+								$last = pack("a1a100a6a2a32a32a8a8a155a12", "0", "", "ustar", "00", "", "", "", "", "", "");
+								$v_checksum = 0;
+								for ($i=0; $i<148; $i++)
+								{
+								  $v_checksum += ord(substr($first,$i,1));
+								}
+								for ($i=148; $i<156; $i++)
+								{
+								  $v_checksum += ord(' ');
+								}
+								for ($i=156, $j=0; $i<512; $i++, $j++)
+								{
+								  $v_checksum += ord(substr($last,$j,1));
+								}
+								echo $first;
+							    $v_checksum = sprintf("%6s ", DecOct($v_checksum));
+								echo pack("a8", $v_checksum);
+								echo $last;
+								readfile(UPLOAD_DIR."/f".$row[1]);
+								if($fs % 512 > 0)
+								{
+									$i = 512 - ($fs % 512);
+									while($i > 0)
+									{
+										echo chr(0);
+										$i--;
+									}
+								}
+							}
+						}
+						echo pack("a1024", "");
+					}
+				}
+				db_disconnect();
+			}
 			exit;
 		}
 		case 'pin':

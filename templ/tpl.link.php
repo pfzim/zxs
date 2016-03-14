@@ -32,4 +32,5 @@
 		<?php } ?>
 			</tbody>
 		</table>
+		<p>Download this folder as <a href="<?php eh("/archive/$id/$fid/zxs-archive-$id-$fid.tar"); ?>">archive (tar)</a></p>
 <?php include("tpl.footer.php"); ?>
