@@ -173,7 +173,7 @@ function delete_expired()
 		}
 		case 'logoff':
 		{
-			$_SESSION['uid'] = $res[0][0];
+			$_SESSION['uid'] = 0;
 			$uid = $_SESSION['uid'];
 			include('templ/tpl.login.php');
 			exit;
