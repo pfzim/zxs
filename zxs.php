@@ -128,7 +128,7 @@ function delete_expired()
 				}
 				$query = rpv_v2("INSERT INTO zxs_users (login, passwd, mail, deleted) VALUES (!, !, !, 0)", array(@$_POST['login'], @$_POST['passwd'], @$_POST['mail']));
 				$res = db_put($query);
-				mail();
+				//mail();
 				db_disconnect();
 				
 				header("Location: $self");
