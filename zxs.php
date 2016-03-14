@@ -19,7 +19,7 @@
 
 function delete_expired()
 {
-	$res = db_select("SELECT m.`id` FROM `zxs_files` AS m WHERE (m.`deleted` = 0 AND m.`type` = 0 AND m.`expire` IS NOT NULL AND m.`expire` < CURDATE()) OR (m.`deleted` = 1 AND m.`type` = 3 AND m.`date` IS NOT NULL AND DATE_ADD(m.`date`, INTERVAL 2 DAY) < CURDATE())");
+	$res = db_select("SELECT m.`id` FROM `zxs_files` AS m WHERE (m.`deleted` = 0 AND m.`type` = 0 AND m.`expire` IS NOT NULL AND m.`expire` < CURDATE()) OR (m.`deleted` = 1 AND m.`type` = 3 AND m.`date` IS NOT NULL AND DATE_ADD(m.`date`, INTERVAL 3 DAY) < CURDATE())");
 	if($res !== FALSE) foreach($res as $row)
 	{
 		$query = rpv_v2("UPDATE `zxs_files` SET `type` = 0, `deleted` = 1 WHERE `id` = # LIMIT 1", array($row[0]));
