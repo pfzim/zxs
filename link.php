@@ -46,6 +46,62 @@ function share_subdir($uid, $lid, $id)
 	}
 }
 
+function tar_checksum($first, $last)
+{
+	$v_checksum = 0;
+	for ($i=0; $i<148; $i++)
+	{
+	  $v_checksum += ord(substr($first,$i,1));
+	}
+	for ($i=148; $i<156; $i++)
+	{
+	  $v_checksum += ord(' ');
+	}
+	for ($i=156, $j=0; $i<512; $i++, $j++)
+	{
+	  $v_checksum += ord(substr($last,$j,1));
+	}
+	
+	return pack("a8", sprintf("%6s ", DecOct($v_checksum)));
+}
+
+function tar_fill($fs)
+{
+	if($fs % 512 > 0)
+	{
+		$i = 512 - ($fs % 512);
+		while($i > 0)
+		{
+			echo chr(0);
+			$i--;
+		}
+	}
+}
+
+function tar_header($name, $flag, $perm, $size, $date)
+{
+	$fs = strlen($name);
+	if($fs > 99)
+	{
+		$first = pack("a100a8a8a8a12A12", '././@LongLink', $perm, "0000000 ", "0000000 ", sprintf("%11s ", DecOct($fs)), sprintf("%11s", DecOct(strtotime($date))));
+		$last = pack("a1a100a6a2a32a32a8a8a155a12", 'L', "", "ustar", "00", "", "", "", "", "", "");
+
+		echo $first;
+		echo tar_checksum($first, $last);
+		echo $last;
+		echo $name;
+		tar_fill($fs);
+		$name = substr($name, 0, 99);
+	}
+
+	$first = pack("a100a8a8a8a12A12", $name, $perm, "0000000 ", "0000000 ", sprintf("%11s ", DecOct($size)), sprintf("%11s", DecOct(strtotime($date))));
+	$last = pack("a1a100a6a2a32a32a8a8a155a12", $flag, "", "ustar", "00", "", "", "", "", "", "");
+
+	echo $first;
+	echo tar_checksum($first, $last);
+	echo $last;
+}
+
 function tar_subdir($lid, $id, $path)
 {
 	$query = rpv_v2("SELECT j2.`id`, j2.`type`, j2.`name`, j2.`size`, j2.`date`, m.`pid` FROM `zxs_link_files` AS m LEFT JOIN `zxs_links` AS j1 ON j1.`id` = m.`lid` LEFT JOIN `zxs_files` AS j2 ON j2.`id` = m.`fid` WHERE m.`lid` = # AND m.`pid` = # AND j2.`deleted` = 0 AND j1.`deleted` = 0 ORDER BY j2.`type` DESC, j2.`name`", array($lid, $id));
@@ -56,59 +112,15 @@ function tar_subdir($lid, $id, $path)
 		{
 			if(intval($row[1]) == 1)
 			{
-				$first = pack("a100a8a8a8a12A12", $path.$row[2], "0040777 ", "0000000 ", "0000000 ", sprintf("%11s ", DecOct(0)), sprintf("%11s", DecOct(strtotime($row[4]))));
-				$last = pack("a1a100a6a2a32a32a8a8a155a12", "5", "", "ustar", "00", "", "", "", "", "", "");
-				$v_checksum = 0;
-				for ($i=0; $i<148; $i++)
-				{
-				  $v_checksum += ord(substr($first,$i,1));
-				}
-				for ($i=148; $i<156; $i++)
-				{
-				  $v_checksum += ord(' ');
-				}
-				for ($i=156, $j=0; $i<512; $i++, $j++)
-				{
-				  $v_checksum += ord(substr($last,$j,1));
-				}
-				echo $first;
-				$v_checksum = sprintf("%6s ", DecOct($v_checksum));
-				echo pack("a8", $v_checksum);
-				echo $last;
+				tar_header($path.$row[2], '5', '0040777 ', 0, $row[4]);
 				tar_subdir($lid, $row[0], $path.$row[2].'/');
 			}
 			else
 			{
 				$fs = filesize(UPLOAD_DIR."/f".$row[0]);
-				$first = pack("a100a8a8a8a12A12", $path.$row[2], "0100777 ", "0000000 ", "0000000 ", sprintf("%11s ", DecOct($fs)), sprintf("%11s", DecOct(strtotime($row[4]))));
-				$last = pack("a1a100a6a2a32a32a8a8a155a12", "0", "", "ustar", "00", "", "", "", "", "", "");
-				$v_checksum = 0;
-				for ($i=0; $i<148; $i++)
-				{
-				  $v_checksum += ord(substr($first,$i,1));
-				}
-				for ($i=148; $i<156; $i++)
-				{
-				  $v_checksum += ord(' ');
-				}
-				for ($i=156, $j=0; $i<512; $i++, $j++)
-				{
-				  $v_checksum += ord(substr($last,$j,1));
-				}
-				echo $first;
-				$v_checksum = sprintf("%6s ", DecOct($v_checksum));
-				echo pack("a8", $v_checksum);
-				echo $last;
+				tar_header($path.$row[2], '0', '0100777 ', $fs, $row[4]);
 				readfile(UPLOAD_DIR."/f".$row[0]);
-				if($fs % 512 > 0)
-				{
-					$i = 512 - ($fs % 512);
-					while($i > 0)
-					{
-						echo chr(0);
-						$i--;
-					}
-				}
+				tar_fill($fs);
 			}
 		}
 	}
@@ -250,7 +262,7 @@ function tar_subdir($lid, $id, $path)
 			if($id)
 			{
 				db_connect();
-				$query = rpv_v2("SELECT j1.`pin`, j2.`id`, j2.`type`, j2.`name`, j2.`size`, j2.`date`, m.`pid` FROM `zxs_link_files` AS m LEFT JOIN `zxs_links` AS j1 ON j1.`id` = m.`lid` LEFT JOIN `zxs_files` AS j2 ON j2.`id` = m.`fid` WHERE m.`lid` = # AND m.`pid` = # AND j2.`deleted` = 0 AND j1.`deleted` = 0 ORDER BY j2.`type` DESC, j2.`name`", array($id, $fid));
+				$query = rpv_v2("SELECT m.`pin` FROM `zxs_links` AS m WHERE m.`id` = # AND m.`deleted` = 0 LIMIT 1", array($id));
 				$res = db_select($query);
 				if($res !== FALSE)
 				{
@@ -259,65 +271,7 @@ function tar_subdir($lid, $id, $path)
 						header("Content-Type: application/octet-stream");
 						//header("Content-Disposition: attachment; filename=\"zxs-link-archive-".$id.".tar\";");
 
-						foreach($res as $row)
-						{
-							if(intval($row[2]) == 1)
-							{
-								$first = pack("a100a8a8a8a12A12", $row[3], "0040777 ", "0000000 ", "0000000 ", sprintf("%11s ", DecOct(0)), sprintf("%11s", DecOct(strtotime($row[5]))));
-								$last = pack("a1a100a6a2a32a32a8a8a155a12", "5", "", "ustar", "00", "", "", "", "", "", "");
-								$v_checksum = 0;
-								for ($i=0; $i<148; $i++)
-								{
-								  $v_checksum += ord(substr($first,$i,1));
-								}
-								for ($i=148; $i<156; $i++)
-								{
-								  $v_checksum += ord(' ');
-								}
-								for ($i=156, $j=0; $i<512; $i++, $j++)
-								{
-								  $v_checksum += ord(substr($last,$j,1));
-								}
-								echo $first;
-							    $v_checksum = sprintf("%6s ", DecOct($v_checksum));
-								echo pack("a8", $v_checksum);
-								echo $last;
-								tar_subdir($id, $row[1], $row[3].'/');
-							}
-							else
-							{
-								$fs = filesize(UPLOAD_DIR."/f".$row[1]);
-								$first = pack("a100a8a8a8a12A12", $row[3], "0100777 ", "0000000 ", "0000000 ", sprintf("%11s ", DecOct($fs)), sprintf("%11s", DecOct(strtotime($row[5]))));
-								$last = pack("a1a100a6a2a32a32a8a8a155a12", "0", "", "ustar", "00", "", "", "", "", "", "");
-								$v_checksum = 0;
-								for ($i=0; $i<148; $i++)
-								{
-								  $v_checksum += ord(substr($first,$i,1));
-								}
-								for ($i=148; $i<156; $i++)
-								{
-								  $v_checksum += ord(' ');
-								}
-								for ($i=156, $j=0; $i<512; $i++, $j++)
-								{
-								  $v_checksum += ord(substr($last,$j,1));
-								}
-								echo $first;
-							    $v_checksum = sprintf("%6s ", DecOct($v_checksum));
-								echo pack("a8", $v_checksum);
-								echo $last;
-								readfile(UPLOAD_DIR."/f".$row[1]);
-								if($fs % 512 > 0)
-								{
-									$i = 512 - ($fs % 512);
-									while($i > 0)
-									{
-										echo chr(0);
-										$i--;
-									}
-								}
-							}
-						}
+						tar_subdir($id, 0, '');
 						echo pack("a1024", "");
 					}
 				}
