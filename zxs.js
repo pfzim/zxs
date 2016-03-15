@@ -685,9 +685,11 @@ function f_mkdir_event(el, id, event)
 								row.cells[0].innerHTML = '<input type="checkbox" name="check" value="' + result.id + '"/>'
 
 								row.cells[1].id = "fname" + result.id;
-								row.cells[1].innerHTML = '<a href="?id=' + result.id + '"><b>' + escapeHtml(result.name) + '</b></a>';
+								row.cells[1].innerHTML = '<a id="dir'+result.id+'" class="boldtext" href="?id=' + result.id + '">' + escapeHtml(result.name) + '</a>';
 
 								row.cells[2].textContent = '[DIR]';
+								row.cells[2].onclick = function() { f_rename_dir(result.id); };
+								row.cells[2].className = 'command';
 
 								row.cells[3].innerHTML = '<a href="#" onclick="return f_share(' + result.id + ');">Share</a> <a href="#" onclick="return f_delete(' + result.id + ');">Delete</a>';
 
@@ -1432,7 +1434,7 @@ function zxs_init(uid, id)
 {
 			gi("upload").onchange = function(uidd, idd) {
 				return function(event) {
-					var files = this.files;
+					var files = event.target.files;
 					for(var i=0, n=files.length;i<n;i++)
 					{
 						f_upload(uidd, idd, files[i], k++, 0, 0);
