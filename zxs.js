@@ -18,10 +18,10 @@ function escapeHtml(text) {
 function formatbytes(bytes, decimals) {
    if(bytes == 0) return '0 B';
    var k = 1024;
-   var dm = decimals + 1 || 3;
+   var dm = decimals || 2;
    var sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
    var i = Math.floor(Math.log(bytes) / Math.log(k));
-   return (bytes / Math.pow(k, i)).toPrecision(dm) + ' ' + sizes[i];
+   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
 if(!XMLHttpRequest.prototype.sendAsBinary) { 
@@ -775,7 +775,7 @@ function f_expand(self, id, pid)
 								}
 								else
 								{
-									text += '<li>'+escapeHtml(result.list[i].name)+'</li>';
+									text += '<li>'+escapeHtml(result.list[i].name)+' (<a href="?action=download&id='+result.list[i].id+'">'+formatbytes(result.list[i].size, 2)+'</a>)</li>';
 								}
 							}
 							text += '</ul>';
