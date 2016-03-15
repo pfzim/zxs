@@ -1221,37 +1221,37 @@ function f_expire_cal(el, id)
 	list = document.createElement('div');
 	list.id = 'cmd1';
 	list.className = 'list-item';
-	list.textContent = '+1 неделя';
+	list.textContent = '+1 week';
 	div.appendChild(list);
 
 	list = document.createElement('div');
 	list.id = 'cmd2';
 	list.className = 'list-item';
-	list.textContent = '+1 месяц';
+	list.textContent = '+1 month';
 	div.appendChild(list);
 
 	list = document.createElement('div');
 	list.id = 'cmd3';
 	list.className = 'list-item';
-	list.textContent = '+3 месяца';
+	list.textContent = '+3 months';
 	div.appendChild(list);
 
 	list = document.createElement('div');
 	list.id = 'cmd4';
 	list.className = 'list-item';
-	list.textContent = 'через неделю';
+	list.textContent = 'a week later';
 	div.appendChild(list);
 
 	list = document.createElement('div');
 	list.id = 'cmd5';
 	list.className = 'list-item';
-	list.textContent = 'через месяц';
+	list.textContent = 'a month later';
 	div.appendChild(list);
 
 	list = document.createElement('div');
 	list.id = 'cmd6';
 	list.className = 'list-item';
-	list.textContent = 'бессрочно';
+	list.textContent = 'in perpetuity';
 	div.appendChild(list);
 
 	row = document.createElement('div');
