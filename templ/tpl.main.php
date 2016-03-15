@@ -22,8 +22,8 @@
 			<tr id="<?php eh("row".$row[0]);?>">
 				<td><input type="checkbox" name="check" value="<?php eh($row[0]); ?>"/></td>
 			<?php if(intval($row[5]) == 1) { ?>
-				<td><a href="<?php eh("$self?id=$row[0]"); ?>"><b><?php eh($row[1]); ?></b></a></td>
-				<td>[DIR]</td>
+				<td id="<?php eh("fname".$row[0]); ?>"><a id="<?php eh("dir".$row[0]); ?>" class="boldtext" href="<?php eh("$self?id=$row[0]"); ?>"><?php eh($row[1]); ?></a></td>
+				<td class="command" onclick="f_rename_dir(<?php eh($row[0]); ?>);">[Rename]</td>
 				<td>
 					<a href="<?php eh("$self?action=share&id=$row[0]"); ?>" onclick="return f_share(<?php eh($row[0]); ?>);">Share</a>
 					<a href="<?php eh("$self"); ?>" onclick="return f_delete(<?php eh($row[0]); ?>);">Delete</a>

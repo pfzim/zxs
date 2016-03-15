@@ -261,6 +261,63 @@ function f_rename(el, id)
 	return false;
 }
 
+function f_rename_dir_event(event, el, id, old)
+{
+	if(event == 13)
+	{
+		if(el.value.length != 0)
+		{
+			var xhr = f_xhr();
+			if (xhr)
+			{
+				xhr.open("post", "zxsa.php?action=rename&id="+id, true);
+				xhr.onreadystatechange = function(e) {
+					if(this.readyState == 4) {
+						if(this.status == 200)
+						{
+							var result = JSON.parse(this.responseText);
+							if(result.result)
+							{
+								gi("fname"+id).innerHTML = '<a id="dir'+id+'" class="boldtext" href="?id='+id+'">'+old+'</a>';
+								f_popup("Error", result.status);
+							}
+							else
+							{
+								gi("fname"+id).innerHTML = '<a id="dir'+id+'" class="boldtext" href="?id='+id+'">'+escapeHtml(result.name)+'</a>';
+							}
+						}
+						else
+						{
+							gi("fname"+id).innerHTML = '<a id="dir'+id+'" class="boldtext" href="?id='+id+'">'+old+'</a>';
+							f_popup("Error", "failure");
+						}
+					}
+				};
+				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+				xhr.send("name="+encodeURIComponent(el.value));
+			}
+		}
+	}
+	else if(event == 27)
+	{
+		el.onblur = null;
+		var val = el.value;
+		gi("fname"+id).innerHTML = '<a id="dir'+id+'" class="boldtext" href="?id='+id+'">'+old+'</a>';
+	}
+}
+
+function f_rename_dir(id)
+{
+	if(!gi('gettext'))
+	{
+		var val = gi('dir'+id).textContent;
+		gi('fname'+id).innerHTML = '<input id="gettext" type="text" style="width: 98%" value="'+escapeHtml(val)+'" onblur="f_rename_dir_event(13, this, '+id+', \''+escapeHtml(escapeHtml(val))+'\');" onkeydown="f_rename_dir_event(event.keyCode, this, '+id+', \''+escapeHtml(escapeHtml(val))+'\');"/>';
+		gi("gettext").setSelectionRange(0, val.length);
+		gi("gettext").focus();
+	}
+	return false;
+}
+
 function f_desc_event(event, el, id, old)
 {
 	if(event == 13)
