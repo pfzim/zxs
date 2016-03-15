@@ -249,13 +249,15 @@ function delete_expired()
 
 	db_connect();
 	$uplevel = 0;
+	$upname = 0;
 	if($id)
 	{	
-		$query = rpv_v2("SELECT m.`pid` FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`id` = # AND m.`deleted` = 0 LIMIT 1", array($uid, $id));
+		$query = rpv_v2("SELECT m.`pid`, j1.`name` FROM `zxs_files` AS m LEFT JOIN `zxs_files` AS j1 ON j1.`id` = m.`id` WHERE m.`uid` = # AND m.`id` = # AND m.`deleted` = 0 LIMIT 1", array($uid, $id));
 		$res = db_select($query);
 		if($res !== FALSE)
 		{
 			$uplevel = $res[0][0];
+			$upname = $res[0][1];
 		}
 	}
 	

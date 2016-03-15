@@ -271,7 +271,7 @@ function tar_subdir($lid, $id, $path)
 						header("Content-Type: application/octet-stream");
 						//header("Content-Disposition: attachment; filename=\"zxs-link-archive-".$id.".tar\";");
 
-						tar_subdir($id, 0, '');
+						tar_subdir($id, $fid, '');
 						echo pack("a1024", "");
 					}
 				}
@@ -293,13 +293,15 @@ function tar_subdir($lid, $id, $path)
 	update_link($id);
 	#$query = rpv_v2("SELECT j1.`pin`, j2.`id`, j2.`type`, j2.`name`, j2.`size`, j2.`date`, j2.`expire`, j2.`deleted` FROM `zxs_link_files` AS m LEFT JOIN `zxs_links` AS j1 ON j1.`id` = m.`lid` LEFT JOIN `zxs_files` AS j2 ON j2.`id` = m.`fid` WHERE m.`lid` = # AND m.`pid` = # AND j2.`type` = 0 AND j2.`deleted` = 0", array($id, $fid));
 	$uplevel = 0;
+	$upname = 'root';
 	if($fid)
 	{	
-		$query = rpv_v2("SELECT m.`pid` FROM `zxs_link_files` AS m WHERE m.`lid` = # AND m.`fid` = # LIMIT 1", array($id, $fid));
+		$query = rpv_v2("SELECT m.`pid`, j1.`name` FROM `zxs_link_files` AS m LEFT JOIN `zxs_files` AS j1 ON j1.`id` = m.`fid` WHERE m.`lid` = # AND m.`fid` = # LIMIT 1", array($id, $fid));
 		$res = db_select($query);
 		if($res !== FALSE)
 		{
 			$uplevel = $res[0][0];
+			$upname = $res[0][1];
 		}
 	}
 	
