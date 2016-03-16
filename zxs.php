@@ -110,7 +110,7 @@ function delete_expired()
 			}
 			case 'reg':
 			{
-				if(empty($_POST['login']) || empty($_POST['passwd']) || empty($_POST['mail']) || !preg_match('/^.+@mcsaatchi\.ru$|^.+@emcg\.com$|^.+@hemoglobin\.moscow$|^.+@mcsaatchipromo\.ru$/i', $_POST['mail']))
+				if(empty($_POST['login']) || empty($_POST['passwd']) || empty($_POST['mail']) || !preg_match('/'.ALLOW_MAILS.'/i', $_POST['mail']))
 				{
 					$error_msg = "Указаны неверные данные!";
 					include('templ/tpl.register.php');
