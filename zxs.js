@@ -1432,41 +1432,41 @@ function FileDrop(e, uid, id)
 
 function zxs_init(uid, id)
 {
-			gi("upload").onchange = function(uidd, idd) {
-				return function(event) {
-					var files = event.target.files;
-					for(var i=0, n=files.length;i<n;i++)
-					{
-						f_upload(uidd, idd, files[i], k++, 0, 0);
-					}
-					return false;
-				}
-			} (uid, id);
+	gi("upload").onchange = function(uidd, idd) {
+		return function(event) {
+			var files = event.target.files;
+			for(var i=0, n=files.length;i<n;i++)
+			{
+				f_upload(uidd, idd, files[i], k++, 0, 0);
+			}
+			return false;
+		}
+	} (uid, id);
 
-			window.onbeforeunload = function (e) {
-				for(var i=0, n=xhttp.length;i<n;i++)
+	window.onbeforeunload = function (e) {
+		for(var i=0, n=xhttp.length;i<n;i++)
+		{
+			if(xhttp[i])
+			{
+				var message = "Your have active uploads. Are you sure want to leave the page and terminate all uploads?";
+				f_popup('Confirm exit', message);
+
+				if (typeof e == "undefined")
 				{
-					if(xhttp[i])
-					{
-						var message = "Your have active uploads. Are you sure want to leave the page and terminate all uploads?";
-						f_popup('Confirm exit', message);
-
-						if (typeof e == "undefined")
-						{
-							e = window.event;
-						}
-						if (e)
-						{
-							e.returnValue = message;
-						}
-						return message;
-					}
+					e = window.event;
 				}
-			};
+				if (e)
+				{
+					e.returnValue = message;
+				}
+				return message;
+			}
+		}
+	};
 
-			var filedrag = document.getElementsByTagName('body')[0];
+	var filedrag = document.getElementsByTagName('body')[0];
 
-			filedrag.addEventListener("dragover", DragOver, false);
-			filedrag.addEventListener("dragleave", DragLeave, false);
-			filedrag.addEventListener("drop", function(event) { FileDrop(event, uid, id); }, false);
+	filedrag.addEventListener("dragover", DragOver, false);
+	filedrag.addEventListener("dragleave", DragLeave, false);
+	filedrag.addEventListener("drop", function(event) { FileDrop(event, uid, id); }, false);
 }

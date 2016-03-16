@@ -264,6 +264,8 @@ function tar_subdir($lid, $id, $path)
 				db_connect();
 				$query = rpv_v2("SELECT m.`pin` FROM `zxs_links` AS m WHERE m.`id` = # AND m.`deleted` = 0 LIMIT 1", array($id));
 				$res = db_select($query);
+				$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `oid`, `fid`, `ip`) VALUES (NOW(), #, #, #, !)", array(0, 5, $id, $ip));
+				db_put($query);
 				if($res !== FALSE)
 				{
 					if(empty($res[0][0]) || (strcmp($res[0][0], $pin) == 0))
