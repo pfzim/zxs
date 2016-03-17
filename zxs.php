@@ -100,7 +100,7 @@ function delete_expired()
 				$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `oid`, `fid`, `ip`) VALUES (NOW(), #, #, #, !)", array($uid, 1, 0, $ip));
 				db_put($query);
 				db_disconnect();
-				header("Location: $self");
+				header("Location: /");
 				exit;
 			}
 			case 'register':

@@ -8,3 +8,12 @@ RewriteRule ^dl/(\d+)/(\d+)/.*$ link.php?action=download&id=$1&fid=$2
 RewriteRule ^link/(\d+)/?$ link.php?id=$1
 RewriteRule ^link/(\d+)/(\d+)/?$ link.php?id=$1&fid=$2
 RewriteRule ^archive/(\d+)/(\d+)/.*$ link.php?action=tar&id=$1&fid=$2
+RewriteRule ^/?$ zxs.php
+RewriteRule ^(\d+)/?$ zxs.php?id=$1
+RewriteRule ^links/?$ zxs.php?action=links
+RewriteRule ^all/?$ zxs.php?action=all
+RewriteRule ^all/(\d+)/?$ zxs.php?action=all&id=$1
+RewriteRule ^all-links/?$ zxs.php?action=all-links
+RewriteRule ^all-links/(\d+)/?$ zxs.php?action=all-links&id=$1
+RewriteRule ^info/?$ zxs.php?action=info
+RewriteRule ^logoff/?$ zxs.php?action=logoff

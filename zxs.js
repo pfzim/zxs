@@ -278,17 +278,17 @@ function f_rename_dir_event(event, el, id, old)
 							var result = JSON.parse(this.responseText);
 							if(result.result)
 							{
-								gi("fname"+id).innerHTML = '<a id="dir'+id+'" class="boldtext" href="?id='+id+'">'+old+'</a>';
+								gi("fname"+id).innerHTML = '<a id="dir'+id+'" class="boldtext" href="/'+id+'/">'+old+'</a>';
 								f_popup("Error", result.status);
 							}
 							else
 							{
-								gi("fname"+id).innerHTML = '<a id="dir'+id+'" class="boldtext" href="?id='+id+'">'+escapeHtml(result.name)+'</a>';
+								gi("fname"+id).innerHTML = '<a id="dir'+id+'" class="boldtext" href="/'+id+'/">'+escapeHtml(result.name)+'</a>';
 							}
 						}
 						else
 						{
-							gi("fname"+id).innerHTML = '<a id="dir'+id+'" class="boldtext" href="?id='+id+'">'+old+'</a>';
+							gi("fname"+id).innerHTML = '<a id="dir'+id+'" class="boldtext" href="/'+id+'/">'+old+'</a>';
 							f_popup("Error", "failure");
 						}
 					}
@@ -302,7 +302,7 @@ function f_rename_dir_event(event, el, id, old)
 	{
 		el.onblur = null;
 		var val = el.value;
-		gi("fname"+id).innerHTML = '<a id="dir'+id+'" class="boldtext" href="?id='+id+'">'+old+'</a>';
+		gi("fname"+id).innerHTML = '<a id="dir'+id+'" class="boldtext" href="/'+id+'/">'+old+'</a>';
 	}
 }
 
@@ -685,7 +685,7 @@ function f_mkdir_event(el, id, event)
 								row.cells[0].innerHTML = '<input type="checkbox" name="check" value="' + result.id + '"/>'
 
 								row.cells[1].id = "fname" + result.id;
-								row.cells[1].innerHTML = '<a id="dir'+result.id+'" class="boldtext" href="?id=' + result.id + '">' + escapeHtml(result.name) + '</a>';
+								row.cells[1].innerHTML = '<a id="dir'+result.id+'" class="boldtext" href="/' + result.id + '/">' + escapeHtml(result.name) + '</a>';
 
 								row.cells[2].textContent = '[DIR]';
 								row.cells[2].onclick = function() { f_rename_dir(result.id); };

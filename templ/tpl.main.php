@@ -15,14 +15,14 @@
 			<tbody>
 		<?php if($uplevel || $id) { ?>
 			<tr>
-				<td colspan="7"><a href="<?php eh("$self?id=$uplevel"); ?>"><b>Up level</b></a></td>
+				<td colspan="7"><a href="<?php eh("/$uplevel/"); ?>"><b>Up level</b></a></td>
 			</tr>
 		<?php } ?>
 		<?php $i = 0; if($res !== FALSE) foreach($res as $row) { $i++; ?>
 			<tr id="<?php eh("row".$row[0]);?>">
 				<td><input type="checkbox" name="check" value="<?php eh($row[0]); ?>"/></td>
 			<?php if(intval($row[5]) == 1) { ?>
-				<td id="<?php eh("fname".$row[0]); ?>"><a id="<?php eh("dir".$row[0]); ?>" class="boldtext" href="<?php eh("$self?id=$row[0]"); ?>"><?php eh($row[1]); ?></a></td>
+				<td id="<?php eh("fname".$row[0]); ?>"><a id="<?php eh("dir".$row[0]); ?>" class="boldtext" href="<?php eh("/$row[0]/"); ?>"><?php eh($row[1]); ?></a></td>
 				<td class="command" onclick="f_rename_dir(<?php eh($row[0]); ?>);">[Rename]</td>
 				<td>
 					<a href="<?php eh("$self?action=share&id=$row[0]"); ?>" onclick="return f_share(<?php eh($row[0]); ?>);">Share</a>

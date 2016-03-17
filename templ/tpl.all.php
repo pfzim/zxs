@@ -14,13 +14,13 @@
 			<tbody>
 		<?php if($uplevel || $id) { ?>
 			<tr>
-				<td colspan="6"><a href="<?php eh("$self?action=all&id=$uplevel"); ?>"><b>Up level</b></a></td>
+				<td colspan="6"><a href="<?php eh("/all/$uplevel/"); ?>"><b>Up level</b></a></td>
 			</tr>
 		<?php } ?>
 		<?php $i = 0; if($res !== FALSE) foreach($res as $row) { $i++; ?>
 			<tr id="<?php eh("row".$row[0]);?>">
 			<?php if(intval($row[5]) == 1) { ?>
-				<td><a href="<?php eh("$self?action=all&id=$row[0]"); ?>"><b><?php eh($row[1]); ?></b></a></td>
+				<td><a href="<?php eh("/all/$row[0]/"); ?>"><b><?php eh($row[1]); ?></b></a></td>
 				<td>[DIR]</td>
 				<td><?php eh($row[7]); ?></td>
 				<td><?php eh($row[6]); ?></td>

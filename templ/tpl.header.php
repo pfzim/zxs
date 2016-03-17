@@ -12,15 +12,15 @@
 	<body>
 		<?php if($uid) { ?>
 		<ul class="menu-bar">
-			<li><a href="<?php eh("$self"); ?>">My files</a></li>
-			<li><a href="<?php eh("$self?action=links"); ?>">My shares</a></li>
+			<li><a href="/">My files</a></li>
+			<li><a href="/links/">My shares</a></li>
 			<?php if($uid == 1) { ?>
-			<li><a href="<?php eh("$self?action=all"); ?>">All files</a></li>
-			<li><a href="<?php eh("$self?action=all-links"); ?>">All links</a></li>
+			<li><a href="/all/">All files</a></li>
+			<li><a href="/all-links/">All links</a></li>
 			<?php } ?>
 			<ul style="float:right;list-style-type:none;">
-				<li><a href="<?php eh("$self?action=info"); ?>">About</a></li>
-				<li><a href="<?php eh("$self?action=logoff"); ?>">Logout</a></li>
+				<li><a href="/info/">About</a></li>
+				<li><a href="/logoff/">Logout</a></li>
 			</ul>
 		</ul>
 		<?php } ?>
