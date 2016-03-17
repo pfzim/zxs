@@ -5,7 +5,7 @@
 			<tr>
 				<th width="3%"><input type="checkbox" onclick="f_select_all(this)"/></th>
 				<th width="34%">Name</th>
-				<th width="10%">Size /DL</th>
+				<th width="10%" title="Size /Download count">Size /DL</th>
 				<th width="10%">Operations</th>
 				<th width="25%">Description</th>
 				<th width="9%">Created</th>

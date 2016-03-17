@@ -777,7 +777,7 @@ function f_expand(self, id, pid)
 								}
 								else
 								{
-									text += '<li>'+escapeHtml(result.list[i].name)+' (<a href="?action=download&id='+result.list[i].id+'">'+formatbytes(result.list[i].size, 2)+'</a>)</li>';
+									text += '<li>'+escapeHtml(result.list[i].name)+' (<a href="/zxs.php?action=download&id='+result.list[i].id+'">'+formatbytes(result.list[i].size, 2)+'</a>)</li>';
 								}
 							}
 							text += '</ul>';
@@ -835,7 +835,7 @@ function f_upload0(uid, id, file, k)
 						row.cells[1].textContent = result.name;
 						row.cells[1].className = 'command';
 
-						row.cells[2].innerHTML = '<a href="?action=download&id=' + result.id + '">' + formatbytes(result.size) + '</a>';
+						row.cells[2].innerHTML = '<a href="/zxs.php?action=download&id=' + result.id + '">' + formatbytes(result.size) + '</a>';
 
 						row.cells[3].innerHTML = '<a href="#" onclick="return f_share(' + result.id + ');">Share</a> <a href="#" onclick="return f_delete(' + result.id + ');">Delete</a>';
 
@@ -942,7 +942,7 @@ function f_upload(uid, id, file, k, file_pos, fid)
 							row.cells[1].textContent = result.name;
 							row.cells[1].className = 'command';
 
-							row.cells[2].innerHTML = '<a href="?action=download&id=' + result.id + '">' + formatbytes(result.size, 2) + '</a>';
+							row.cells[2].innerHTML = '<a href="/zxs.php?action=download&id=' + result.id + '">' + formatbytes(result.size, 2) + '</a>';
 
 							row.cells[3].innerHTML = '<a href="#" onclick="return f_share(' + result.id + ');">Share</a> <a href="#" onclick="return f_delete(' + result.id + ');">Delete</a>';
 
