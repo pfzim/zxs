@@ -121,6 +121,8 @@ function tar_subdir($lid, $id, $path)
 				tar_header($path.$row[2], '0', '0100777 ', $fs, $row[4]);
 				readfile(UPLOAD_DIR."/f".$row[0]);
 				tar_fill($fs);
+				$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `oid`, `fid`, `ip`) VALUES (NOW(), #, #, #, !)", array(0, 2, $row[0], $ip));
+				db_put($query);
 			}
 		}
 	}

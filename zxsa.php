@@ -312,7 +312,7 @@ function delete_subdir($uid, $id)
 			if($res !== FALSE)
 			{
 				$pin = rand(0, 9).rand(0, 9).rand(0, 9).rand(0, 9);
-				$query = rpv_v2("INSERT INTO `zxs_links` (`uid`, `pin`, `desc`) VALUES (#, !, !)", array($uid, $pin, $res[0][1]));
+				$query = rpv_v2("INSERT INTO `zxs_links` (`uid`, `pin`, `desc`, `date`) VALUES (#, !, !, NOW())", array($uid, $pin, $res[0][1]));
 				db_put($query);
 				$lid = db_last_id();
 				
@@ -334,7 +334,7 @@ function delete_subdir($uid, $id)
 			}
 			db_connect();
 			$pin = rand(0, 9).rand(0, 9).rand(0, 9).rand(0, 9);
-			$query = rpv_v2("INSERT INTO `zxs_links` (`uid`, `pin`) VALUES (#, !)", array($uid, $pin));
+			$query = rpv_v2("INSERT INTO `zxs_links` (`uid`, `pin`, `date`) VALUES (#, !, NOW())", array($uid, $pin));
 			db_put($query);
 			$lid = db_last_id();
 

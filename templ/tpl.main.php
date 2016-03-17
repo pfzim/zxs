@@ -5,7 +5,7 @@
 			<tr>
 				<th width="3%"><input type="checkbox" onclick="f_select_all(this)"/></th>
 				<th width="34%">Name</th>
-				<th width="10%">Size</th>
+				<th width="10%">Size /DL</th>
 				<th width="10%">Operations</th>
 				<th width="25%">Description</th>
 				<th width="9%">Created</th>
@@ -31,7 +31,7 @@
 				<td colspan="3" class="command" id="<?php eh("desc".$row[0]); ?>" onclick="f_desc(this, <?php eh($row[0]); ?>);"><?php eh($row[6]); ?></td>
 			<?php } else { ?>
 				<td class="command" id="<?php eh("fname".$row[0]); ?>" onclick="f_rename(this, <?php eh($row[0]); ?>);"><?php eh($row[1]); ?></td>
-				<td><a href="<?php eh("$self?action=download&id=$row[0]"); ?>"><?php eh(formatBytes($row[2], 2));?></a></td>
+				<td><a href="<?php eh("$self?action=download&id=$row[0]"); ?>"><?php eh(formatBytes($row[2], 2));?></a> /<?php eh($row[8]); ?></td>
 				<td>
 					<a href="<?php eh("$self?action=share&id=$row[0]"); ?>" onclick="return f_share(<?php eh($row[0]); ?>);">Share</a>
 					<a href="<?php eh("$self"); ?>" onclick="return f_delete(<?php eh($row[0]); ?>);">Delete</a>

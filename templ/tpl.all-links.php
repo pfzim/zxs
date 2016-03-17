@@ -3,10 +3,11 @@
 		<table>
 			<thead>
 			<tr>
-				<th width="40%">Link</th>
+				<th width="25%">Link</th>
 				<th width="5%">PIN</th>
 				<th width="20%">Owner</th>
-				<th width="35%">Description</th>
+				<th width="30%">Description</th>
+				<th width="10%">Created</th>
 			</tr>
 			</thead>
 			<tbody>
@@ -16,6 +17,7 @@
 			<td><?php eh($row[1]);?></td>
 			<td><?php eh($row[3]);?></td>
 			<td><?php eh($row[2]); ?></td>
+			<td title="<?php eh($row[5]);?>"><?php eh($row[4]);?></td>
 		</tr>
 		<?php } ?>
 			</tbody>

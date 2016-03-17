@@ -3,10 +3,11 @@
 		<table class="main-table">
 			<thead>
 			<tr>
-				<th width="40%">Link</th>
+				<th width="25%">Link</th>
 				<th width="5%">PIN</th>
 				<th width="30%">Operations</th>
-				<th width="25%">Description</th>
+				<th width="30%">Description</th>
+				<th width="10%">Created</th>
 			</tr>
 			</thead>
 			<tbody>
@@ -21,6 +22,7 @@
 				<a href="<?php eh("$self?action=pinoff&id=$row[0]"); ?>" onclick="return f_pinoff(<?php eh($row[0]); ?>);">Remove PIN</a>
 			</td>
 			<td class="command" id="<?php eh("desc".$row[0]); ?>" onclick="f_desc_link(this, <?php eh($row[0]); ?>);"><?php eh($row[2]); ?></td>
+			<td title="<?php eh($row[4]);?>"><?php eh($row[3]);?></td>
 		</tr>
 		<?php } ?>
 			</tbody>
