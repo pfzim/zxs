@@ -135,7 +135,7 @@ function f_delete(id)
 		var xhr = f_xhr();
 		if(xhr)
 		{
-			xhr.open("get", "zxsa.php?action=delete&id="+id, true);
+			xhr.open("get", "/zxsa.php?action=delete&id="+id, true);
 			xhr.onreadystatechange = function(e) {
 				if(this.readyState == 4) {
 					if(this.status == 200)
@@ -171,7 +171,7 @@ function f_unlink(id)
 		var xhr = f_xhr();
 		if (xhr)
 		{
-			xhr.open("get", "zxsa.php?action=unlink&id="+id, true);
+			xhr.open("get", "/zxsa.php?action=unlink&id="+id, true);
 			xhr.onreadystatechange = function(e) {
 					if(this.readyState == 4) {
 						if(this.status == 200)
@@ -209,7 +209,7 @@ function f_rename_event(event, el, id, old)
 			var xhr = f_xhr();
 			if (xhr)
 			{
-				xhr.open("post", "zxsa.php?action=rename&id="+id, true);
+				xhr.open("post", "/zxsa.php?action=rename&id="+id, true);
 				xhr.onreadystatechange = function(e) {
 					if(this.readyState == 4) {
 						if(this.status == 200)
@@ -270,7 +270,7 @@ function f_rename_dir_event(event, el, id, old)
 			var xhr = f_xhr();
 			if (xhr)
 			{
-				xhr.open("post", "zxsa.php?action=rename&id="+id, true);
+				xhr.open("post", "/zxsa.php?action=rename&id="+id, true);
 				xhr.onreadystatechange = function(e) {
 					if(this.readyState == 4) {
 						if(this.status == 200)
@@ -325,7 +325,7 @@ function f_desc_event(event, el, id, old)
 		var xhr = f_xhr();
 		if (xhr)
 		{
-			xhr.open("post", "zxsa.php?action=desc&id="+id, true);
+			xhr.open("post", "/zxsa.php?action=desc&id="+id, true);
 			xhr.onreadystatechange = function(e) {
 				if(this.readyState == 4) {
 					if(this.status == 200)
@@ -380,7 +380,7 @@ function f_desc_link_event(event, el, id, old)
 		var xhr = f_xhr();
 		if (xhr)
 		{
-			xhr.open("post", "zxsa.php?action=desc_link&id="+id, true);
+			xhr.open("post", "/zxsa.php?action=desc_link&id="+id, true);
 			xhr.onreadystatechange = function(e) {
 				if(this.readyState == 4) {
 					if(this.status == 200)
@@ -433,7 +433,7 @@ function f_share(id)
 	var xhr = f_xhr();
 	if (xhr)
 	{
-		xhr.open("get", "zxsa.php?action=share&id="+id, true);
+		xhr.open("get", "/zxsa.php?action=share&id="+id, true);
 		xhr.onreadystatechange = function(e) {
 			if (this.readyState == 4) {
 				if(this.status == 200)
@@ -467,7 +467,7 @@ function f_pinoff(id)
 	var xhr = f_xhr();
 	if (xhr)
 	{
-		xhr.open("get", "zxsa.php?action=pinoff&id="+id, true);
+		xhr.open("get", "/zxsa.php?action=pinoff&id="+id, true);
 		xhr.onreadystatechange = function(e) {
 			if(this.readyState == 4) {
 				if(this.status == 200)
@@ -499,7 +499,7 @@ function f_pinon(id)
 	var xhr = f_xhr();
 	if (xhr)
 	{
-		xhr.open("get", "zxsa.php?action=pinon&id="+id, true);
+		xhr.open("get", "/zxsa.php?action=pinon&id="+id, true);
 		xhr.onreadystatechange = function(e) {
 			if(this.readyState == 4) {
 				if(this.status == 200)
@@ -556,7 +556,7 @@ function f_share_selected(el)
 		var xhr = f_xhr();
 		if (xhr)
 		{
-			xhr.open("post", "zxsa.php?action=share_selected", true);
+			xhr.open("post", "/zxsa.php?action=share_selected", true);
 			xhr.onreadystatechange = function(e) {
 				if (this.readyState == 4) {
 					if(this.status == 200)
@@ -619,7 +619,7 @@ function f_delete_selected(el)
 		var xhr = f_xhr();
 		if (xhr)
 		{
-			xhr.open("post", "zxsa.php?action=delete_selected", true);
+			xhr.open("post", "/zxsa.php?action=delete_selected", true);
 			xhr.onreadystatechange = function(e) {
 				if (this.readyState == 4) {
 					if(this.status == 200)
@@ -665,7 +665,7 @@ function f_mkdir_event(el, id, event)
 			var xhr = f_xhr();
 			if(xhr)
 			{
-				xhr.open("post", "zxsa.php?action=mkdir&id="+id, true);
+				xhr.open("post", "/zxsa.php?action=mkdir&id="+id, true);
 				xhr.onreadystatechange = function(e) {
 					if(this.readyState == 4) {
 						if(this.status == 200)
@@ -756,7 +756,7 @@ function f_expand(self, id, pid)
 		var xhr = f_xhr();
 		if(xhr)
 		{
-			xhr.open("get", "zxsa.php?action=expand&id="+id+"&pid="+pid, true);
+			xhr.open("get", "/zxsa.php?action=expand&id="+id+"&pid="+pid, true);
 			xhr.onreadystatechange = function(e) {
 				if(this.readyState == 4) {
 					if(this.status == 200)
@@ -1104,7 +1104,7 @@ function f_expire(id, date)
 	var xhr = f_xhr();
 	if (xhr)
 	{
-		xhr.open("post", "zxsa.php?action=expire&id="+id, true);
+		xhr.open("post", "/zxsa.php?action=expire&id="+id, true);
 		xhr.onreadystatechange = function(e) {
 			if(this.readyState == 4) {
 				if(this.status == 200)
