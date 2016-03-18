@@ -107,8 +107,8 @@ function delete_subdir($uid, $id)
 			{
 				$_SESSION['uid'] = $res[0][0];
 				$uid = $_SESSION['uid'];
-				setcookie("zxsh", @$_COOKIE['zxsh'], time()+2592000);
-				setcookie("zxsl", @$_COOKIE['zxsl'], time()+2592000);
+				setcookie("zxsh", @$_COOKIE['zxsh'], time()+2592000, '/');
+				setcookie("zxsl", @$_COOKIE['zxsl'], time()+2592000, '/');
 			}
 		}
 	}

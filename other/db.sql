@@ -54,6 +54,7 @@ CREATE TABLE  `zxs`.`zxs_users` (
   `login` varchar(255) NOT NULL,
   `passwd` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `mail` varchar(1024) CHARACTER SET latin1 NOT NULL,
+  `sid` varchar(15) DEFAULT NULL,
   `deleted` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;

@@ -81,8 +81,8 @@ function delete_expired()
 			{
 				$_SESSION['uid'] = $res[0][0];
 				$uid = $_SESSION['uid'];
-				setcookie("zxsh", @$_COOKIE['zxsh'], time()+2592000);
-				setcookie("zxsl", @$_COOKIE['zxsl'], time()+2592000);
+				setcookie("zxsh", @$_COOKIE['zxsh'], time()+2592000, '/');
+				setcookie("zxsl", @$_COOKIE['zxsl'], time()+2592000, '/');
 			}
 		}
 	}
@@ -117,15 +117,15 @@ function delete_expired()
 				$uid = $_SESSION['uid'];
 				
 				$sid = uniqid ();
-				setcookie("zxsh", $sid, time()+2592000);
-				setcookie("zxsl", @$_POST['login'], time()+2592000);
+				setcookie("zxsh", $sid, time()+2592000, '/');
+				setcookie("zxsl", @$_POST['login'], time()+2592000, '/');
 				$query = rpv_v2("UPDATE zxs_users SET `sid` = ! WHERE `id` = # LIMIT 1", array($sid, $uid));
 				db_put($query);
 
 				$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", array($uid, LOG_LOGIN, 0, $ip));
 				db_put($query);
 				db_disconnect();
-				header("Location: /");
+				header('Location: /');
 				exit;
 			}
 			case 'register':
@@ -168,7 +168,7 @@ function delete_expired()
 					exit;
 				}
 				db_connect();
-				$query = rpv_v2("UPDATE zxs_users SET deleted = 0 WHERE login = ! AND id = #", array(@$_GET['login'], $id));
+				$query = rpv_v2("UPDATE zxs_users SET `deleted` = 0 WHERE `login` = ! AND `id` = #", array(@$_GET['login'], $id));
 				$res = db_put($query);
 				$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", array(0, LOG_LOGIN_ACTIVATE, $id, $ip));
 				db_put($query);
@@ -198,8 +198,15 @@ function delete_expired()
 		}
 		case 'logoff':
 		{
+			db_connect();
+			$query = rpv_v2("UPDATE zxs_users SET `sid` = NULL WHERE `id` = # LIMIT 1", array($uid));
+			db_put($query);
+			db_disconnect();
 			$_SESSION['uid'] = 0;
 			$uid = $_SESSION['uid'];
+			setcookie("zxsh", NULL, time()-60, '/');
+			setcookie("zxsl", NULL, time()-60, '/');
+			
 			include('templ/tpl.login.php');
 			exit;
 		}
