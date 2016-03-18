@@ -121,7 +121,7 @@ function tar_subdir($lid, $id, $path)
 				tar_header($path.$row[2], '0', '0100777 ', $fs, $row[4]);
 				readfile(UPLOAD_DIR."/f".$row[0]);
 				tar_fill($fs);
-				$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `oid`, `fid`, `ip`) VALUES (NOW(), #, #, #, !)", array(0, 2, $row[0], $ip));
+				$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", array(0, LOG_DOWNLOAD, $row[0], $ip));
 				db_put($query);
 			}
 		}
@@ -182,7 +182,7 @@ function tar_subdir($lid, $id, $path)
 				db_connect();
 				$query = rpv_v2("SELECT j1.`pin`, j2.`id`, j2.`name`, j2.`size` FROM `zxs_link_files` AS m LEFT JOIN `zxs_links` AS j1 ON j1.`id` = m.`lid` LEFT JOIN `zxs_files` AS j2 ON j2.`id` = m.`fid` WHERE m.`lid` = # AND m.`fid` = # AND j2.`type` = 0 AND j1.`deleted` = 0 AND j2.`deleted` = 0 LIMIT 1", array($id, $fid));
 				$res = db_select($query);
-				$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `oid`, `fid`, `ip`) VALUES (NOW(), #, #, #, !)", array(0, 2, $fid, $ip));
+				$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", array(0, LOG_DOWNLOAD, $fid, $ip));
 				db_put($query);
 				db_disconnect();
 				if($res !== FALSE)
@@ -266,7 +266,7 @@ function tar_subdir($lid, $id, $path)
 				db_connect();
 				$query = rpv_v2("SELECT m.`pin` FROM `zxs_links` AS m WHERE m.`id` = # AND m.`deleted` = 0 LIMIT 1", array($id));
 				$res = db_select($query);
-				$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `oid`, `fid`, `ip`) VALUES (NOW(), #, #, #, !)", array(0, 5, $id, $ip));
+				$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", array(0, LOG_TAR_CREATE, $id, $ip));
 				db_put($query);
 				if($res !== FALSE)
 				{

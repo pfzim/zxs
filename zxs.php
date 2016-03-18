@@ -87,7 +87,7 @@ function delete_expired()
 				$res = db_select($query);
 				if($res === FALSE)
 				{
-					$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `oid`, `fid`, `ip`) VALUES (NOW(), #, #, #, !)", array(0, 3, 0, $ip));
+					$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", array(0, LOG_LOGIN_FAILED, 0, $ip));
 					db_put($query);
 					db_disconnect();
 					$error_msg = "Неверное имя пользователя или пароль!";
@@ -97,7 +97,7 @@ function delete_expired()
 				
 				$_SESSION['uid'] = $res[0][0];
 				$uid = $_SESSION['uid'];
-				$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `oid`, `fid`, `ip`) VALUES (NOW(), #, #, #, !)", array($uid, 1, 0, $ip));
+				$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", array($uid, LOG_LOGIN, 0, $ip));
 				db_put($query);
 				db_disconnect();
 				header("Location: /");
@@ -145,7 +145,7 @@ function delete_expired()
 				db_connect();
 				$query = rpv_v2("UPDATE zxs_users SET deleted = 0 WHERE login = ! AND id = #", array(@$_GET['login'], $id));
 				$res = db_put($query);
-				$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `oid`, `fid`, `ip`) VALUES (NOW(), #, #, #, !)", array(0, 4, 0, $ip));
+				$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", array(0, LOG_LOGIN_ACTIVATE, $id, $ip));
 				db_put($query);
 				db_disconnect();
 			}
@@ -227,7 +227,7 @@ function delete_expired()
 				}
 			}
 			
-			$query = rpv_v2("SELECT m.`id`, m.`name`, m.`size`, DATE_FORMAT(m.`date`, '%d.%m.%Y'), DATE_FORMAT(m.`expire`, '%d.%m.%Y'), m.`type`, m.`desc`, j1.`login`, DATE_FORMAT(m.`date`, '%d.%m.%Y %k:%i:%s'), (SELECT COUNT(*) FROM `zxs_log` AS c WHERE c.`oid` = 2 AND c.`fid` = m.`id`) FROM `zxs_files` AS m LEFT JOIN `zxs_users` AS j1 ON j1.`id` = m.`uid` WHERE m.`pid` = # AND m.`deleted` = 0 ORDER BY m.`type` DESC, m.`name`", array($id));
+			$query = rpv_v2("SELECT m.`id`, m.`name`, m.`size`, DATE_FORMAT(m.`date`, '%d.%m.%Y'), DATE_FORMAT(m.`expire`, '%d.%m.%Y'), m.`type`, m.`desc`, j1.`login`, DATE_FORMAT(m.`date`, '%d.%m.%Y %k:%i:%s'), (SELECT COUNT(*) FROM `zxs_log` AS c WHERE c.`type` = # AND c.`p1` = m.`id`) FROM `zxs_files` AS m LEFT JOIN `zxs_users` AS j1 ON j1.`id` = m.`uid` WHERE m.`pid` = # AND m.`deleted` = 0 ORDER BY m.`type` DESC, m.`name`", array(LOG_DOWNLOAD, $id));
 			$res = db_select($query);
 			db_disconnect();
 			if($res === FALSE)
@@ -239,7 +239,7 @@ function delete_expired()
 		case 'info':
 		{
 			db_connect();
-			$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `oid`, `fid`, `ip`) VALUES (NOW(), #, #, #, !)", array($uid, 4, 0, $ip));
+			$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", array($uid, LOG_VIEW_ABOUT, 0, $ip));
 			db_put($query);
 			db_disconnect();
 			include('templ/tpl.info.php');
@@ -269,7 +269,7 @@ function delete_expired()
 	}
 	$free_space = disk_free_space(UPLOAD_DIR."/");
 	
-	$query = rpv_v2("SELECT m.`id`, m.`name`, m.`size`, DATE_FORMAT(m.`date`, '%d.%m.%Y'), DATE_FORMAT(m.`expire`, '%d.%m.%Y'), m.`type`, m.`desc`, DATE_FORMAT(m.`date`, '%d.%m.%Y %k:%i:%s'), (SELECT COUNT(*) FROM `zxs_log` AS c WHERE c.`oid` = 2 AND c.`fid` = m.`id`) FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`pid` = # AND m.`deleted` = 0 ORDER BY m.`type` DESC, m.`name`, m.`id`", array($uid, $id));
+	$query = rpv_v2("SELECT m.`id`, m.`name`, m.`size`, DATE_FORMAT(m.`date`, '%d.%m.%Y'), DATE_FORMAT(m.`expire`, '%d.%m.%Y'), m.`type`, m.`desc`, DATE_FORMAT(m.`date`, '%d.%m.%Y %k:%i:%s'), (SELECT COUNT(*) FROM `zxs_log` AS c WHERE c.`type` = # AND c.`p1` = m.`id`) FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`pid` = # AND m.`deleted` = 0 ORDER BY m.`type` DESC, m.`name`, m.`id`", array(LOG_DOWNLOAD, $uid, $id));
 	$res = db_select($query);
 	db_disconnect();
 	if($res === FALSE)

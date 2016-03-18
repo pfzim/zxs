@@ -13,7 +13,7 @@ CREATE TABLE  `zxs`.`zxs_files` (
   `desc` varchar(4096) NOT NULL,
   `deleted` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=232 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `zxs`.`zxs_link_files`;
 CREATE TABLE  `zxs`.`zxs_link_files` (
@@ -28,21 +28,25 @@ CREATE TABLE  `zxs`.`zxs_links` (
   `uid` int(10) unsigned NOT NULL,
   `pin` varchar(4) CHARACTER SET latin1 NOT NULL,
   `desc` varchar(4096) NOT NULL,
+  `date` datetime NOT NULL,
   `deleted` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=100 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `zxs`.`zxs_log`;
 CREATE TABLE  `zxs`.`zxs_log` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `date` datetime NOT NULL,
-  `uid` int(10) unsigned NOT NULL,
-  `oid` int(10) unsigned NOT NULL,
-  `fid` int(10) unsigned NOT NULL,
+  `uid` int(10) unsigned NOT NULL DEFAULT '0',
+  `type` int(10) unsigned NOT NULL DEFAULT '0',
+  `p1` int(10) unsigned NOT NULL DEFAULT '0',
+  `p2` int(10) unsigned NOT NULL DEFAULT '0',
+  `p3` int(10) unsigned NOT NULL DEFAULT '0',
+  `p4` int(10) unsigned NOT NULL DEFAULT '0',
   `ip` varchar(256) NOT NULL,
   `desc` varchar(1024) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=297 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `zxs`.`zxs_users`;
 CREATE TABLE  `zxs`.`zxs_users` (
@@ -52,5 +56,4 @@ CREATE TABLE  `zxs`.`zxs_users` (
   `mail` varchar(1024) CHARACTER SET latin1 NOT NULL,
   `deleted` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
-
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
