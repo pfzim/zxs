@@ -71,6 +71,24 @@ function delete_expired()
 
 	if(empty($uid))
 	{
+		if(!empty(@$_COOKIE['zxsh']) && !empty(@$_COOKIE['zxsl']))
+		{
+			db_connect();
+			$query = rpv_v2("SELECT m.`id` FROM zxs_users AS m WHERE m.`login` = ! AND m.`sid` IS NOT NULL AND m.`sid` = ! AND m.`deleted` = 0 LIMIT 1", array($_COOKIE['zxsl'], $_COOKIE['zxsh']));
+			$res = db_select($query);
+			db_disconnect();
+			if($res !== FALSE)
+			{
+				$_SESSION['uid'] = $res[0][0];
+				$uid = $_SESSION['uid'];
+				setcookie("zxsh", @$_COOKIE['zxsh'], time()+2592000);
+				setcookie("zxsl", @$_COOKIE['zxsl'], time()+2592000);
+			}
+		}
+	}
+	
+	if(empty($uid))
+	{
 		switch($action)
 		{
 			case 'logon':
@@ -83,7 +101,7 @@ function delete_expired()
 				}
 				db_connect();
 				delete_expired();
-				$query = rpv_v2("SELECT m.`id` FROM zxs_users AS m WHERE m.`login`= ! AND m.`passwd` = ! AND m.`deleted` = 0 LIMIT 1", array(@$_POST['login'], @$_POST['passwd']));
+				$query = rpv_v2("SELECT m.`id` FROM zxs_users AS m WHERE m.`login` = ! AND m.`passwd` = ! AND m.`deleted` = 0 LIMIT 1", array(@$_POST['login'], @$_POST['passwd']));
 				$res = db_select($query);
 				if($res === FALSE)
 				{
@@ -97,6 +115,13 @@ function delete_expired()
 				
 				$_SESSION['uid'] = $res[0][0];
 				$uid = $_SESSION['uid'];
+				
+				$sid = uniqid ();
+				setcookie("zxsh", $sid, time()+2592000);
+				setcookie("zxsl", @$_POST['login'], time()+2592000);
+				$query = rpv_v2("UPDATE zxs_users SET `sid` = ! WHERE `id` = # LIMIT 1", array($sid, $uid));
+				db_put($query);
+
 				$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", array($uid, LOG_LOGIN, 0, $ip));
 				db_put($query);
 				db_disconnect();

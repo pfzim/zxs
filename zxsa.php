@@ -97,6 +97,24 @@ function delete_subdir($uid, $id)
 
 	if(empty($uid))
 	{
+		if(!empty(@$_COOKIE['zxsh']) && !empty(@$_COOKIE['zxsl']))
+		{
+			db_connect();
+			$query = rpv_v2("SELECT m.`id` FROM zxs_users AS m WHERE m.`login` = ! AND m.`sid` IS NOT NULL AND m.`sid` = ! AND m.`deleted` = 0 LIMIT 1", array($_COOKIE['zxsl'], $_COOKIE['zxsh']));
+			$res = db_select($query);
+			db_disconnect();
+			if($res !== FALSE)
+			{
+				$_SESSION['uid'] = $res[0][0];
+				$uid = $_SESSION['uid'];
+				setcookie("zxsh", @$_COOKIE['zxsh'], time()+2592000);
+				setcookie("zxsl", @$_COOKIE['zxsl'], time()+2592000);
+			}
+		}
+	}
+	
+	if(empty($uid))
+	{
 		echo '{"result": 1, "status": "Log in, please"}';
 		exit;
 	}
