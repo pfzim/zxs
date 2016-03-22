@@ -266,7 +266,7 @@ function tar_subdir($lid, $id, $path)
 				db_connect();
 				$query = rpv_v2("SELECT m.`pin` FROM `zxs_links` AS m WHERE m.`id` = # AND m.`deleted` = 0 LIMIT 1", array($id));
 				$res = db_select($query);
-				$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", array(0, LOG_TAR_CREATE, $id, $ip));
+				$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `p2`, `ip`) VALUES (NOW(), #, #, #, !)", array(0, LOG_TAR_CREATE, $id, $fid, $ip));
 				db_put($query);
 				if($res !== FALSE)
 				{

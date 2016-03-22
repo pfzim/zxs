@@ -466,7 +466,7 @@ function rpv_v2($string, $data)
 		}
 		else if($string[$i] === "!")	// safe string
 		{
-			$val = "'".(isset($data[$n])?(get_magic_quotes_gpc()?$data[$n]:addslashes($data[$n])):"")."'";
+			$val = "'".(isset($data[$n])?(get_magic_quotes_gpc()?$data[$n]:addslashes(trim($data[$n]))):"")."'";
 			$string = substr_replace($string, $val, $i, 1);
 			$dl = strlen($val);
 			$i += $dl;
