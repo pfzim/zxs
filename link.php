@@ -130,8 +130,8 @@ function tar_subdir($lid, $id, $path)
 	}
 }
 
-	session_name("ZXSID");
-	session_start();
+	//session_name("ZXSID");
+	//session_start();
 	error_reporting(E_ALL);
 	define("ZXS_PROTECTED", "YES");
 
@@ -141,9 +141,16 @@ function tar_subdir($lid, $id, $path)
 	
 	$uid = 0;
 	$pin = 0;
+	/*
 	if(isset($_SESSION['pin']))
 	{
 		$pin = $_SESSION['pin'];
+	}
+	*/
+
+	if(!empty(@$_COOKIE['zxsp']))
+	{
+		$pin = $_COOKIE['zxsp'];
 	}
 
 	if(!empty($_SERVER['HTTP_CLIENT_IP'])) {
@@ -308,7 +315,8 @@ function tar_subdir($lid, $id, $path)
 		case 'pin':
 		{
 			$pin = @$_POST['pin'];
-			$_SESSION['pin'] = $pin;
+			//$_SESSION['pin'] = $pin;
+			setcookie("zxsp", $pin, time()+2592000, '/');
 			
 			header("Location: /link/$id/");
 			exit;
