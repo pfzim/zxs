@@ -104,6 +104,8 @@ function tar_header($name, $flag, $perm, $size, $date)
 
 function tar_subdir($lid, $id, $path)
 {
+	global $ip;
+	
 	$query = rpv_v2("SELECT j2.`id`, j2.`type`, j2.`name`, j2.`size`, j2.`date`, m.`pid` FROM `zxs_link_files` AS m LEFT JOIN `zxs_links` AS j1 ON j1.`id` = m.`lid` LEFT JOIN `zxs_files` AS j2 ON j2.`id` = m.`fid` WHERE m.`lid` = # AND m.`pid` = # AND j2.`deleted` = 0 AND j1.`deleted` = 0 ORDER BY j2.`type` DESC, j2.`name`", array($lid, $id));
 	$res = db_select($query);
 	if($res !== FALSE)
@@ -198,38 +200,55 @@ function tar_subdir($lid, $id, $path)
 						}
 						if(isset($_SERVER['HTTP_RANGE']))
 						{
-							if(!preg_match('/^bytes=\d+-\d*$/i', $_SERVER['HTTP_RANGE']))
+							//error_log($_SERVER['HTTP_RANGE']);
+							if(!preg_match('/^bytes=\d*-\d*$/i', $_SERVER['HTTP_RANGE']))
 							{
 								header('HTTP/1.1 416 Requested Range Not Satisfiable');
 								header('Content-Range: bytes */'.$fs);
 								exit;
 							}
 							list($pos_s, $pos_e) = explode('-', substr($_SERVER['HTTP_RANGE'], 6));
-							$pos_s = intval($pos_s);
-							$pos_e = intval($pos_e);
-							if(!$pos_e)
+							if(empty($pos_s) && empty($pos_e))
+							{
+								header('HTTP/1.1 416 Requested Range Not Satisfiable');
+								header('Content-Range: bytes */'.$fs);
+								exit;
+							}
+
+							if(empty($pos_e))
 							{
 								$pos_e = $fs - 1;
 							}
+							else if(empty($pos_s))
+							{
+								$pos_s = $fs - intval($pos_e);
+								$pos_e = $fs - 1;
+							}
+
+							$pos_s = intval($pos_s);
+							$pos_e = intval($pos_e);
+
 							if($pos_s > $pos_e)
 							{
 								header('HTTP/1.1 416 Requested Range Not Satisfiable');
 								header('Content-Range: bytes */'.$fs);
 								exit;
 							}
-							
+
+							//error_log('Content-Range: bytes '.$pos_s.'-'.$pos_e.'/'.$fs);
 							header('HTTP/1.1 206 Partial Content');
 							header('Content-Range: bytes '.$pos_s.'-'.$pos_e.'/'.$fs);
 							$fh = fopen(UPLOAD_DIR."/f".$res[0][1], 'rb');
 							if(fseek($fh, $pos_s, SEEK_SET) == 0)
 							{
-								while($pos_s < $pos_e)
+								while($pos_s <= $pos_e)
 								{
+									//error_log('pos_s = '.$pos_s);
 									//echo fgetc($fh);
 									//$pos_s++;
 									if(($pos_s + 1048576) > $pos_e)
 									{
-										echo fread($fh, $pos_e - $pos_s);
+										echo fread($fh, $pos_e - $pos_s + 1);
 										break;
 									}
 

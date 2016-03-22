@@ -204,7 +204,7 @@ function f_rename_event(event, el, id, old)
 {
 	if(event == 13)
 	{
-		if(el.value.length != 0)
+		if(el.value.trim().length != 0)
 		{
 			var xhr = f_xhr();
 			if (xhr)
@@ -265,7 +265,7 @@ function f_rename_dir_event(event, el, id, old)
 {
 	if(event == 13)
 	{
-		if(el.value.length != 0)
+		if(el.value.trim().length != 0)
 		{
 			var xhr = f_xhr();
 			if (xhr)
@@ -659,7 +659,7 @@ function f_mkdir_event(el, id, event)
 {
 	if(event == 13)
 	{
-		if(el.value.length != 0)
+		if(el.value.trim().length != 0)
 		{
 			el.onblur = null;
 			var xhr = f_xhr();
