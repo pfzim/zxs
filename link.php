@@ -184,17 +184,17 @@ function tar_subdir($lid, $id, $path)
 				db_connect();
 				$query = rpv_v2("SELECT j1.`pin`, j2.`id`, j2.`name`, j2.`size` FROM `zxs_link_files` AS m LEFT JOIN `zxs_links` AS j1 ON j1.`id` = m.`lid` LEFT JOIN `zxs_files` AS j2 ON j2.`id` = m.`fid` WHERE m.`lid` = # AND m.`fid` = # AND j2.`type` = 0 AND j1.`deleted` = 0 AND j2.`deleted` = 0 LIMIT 1", array($id, $fid));
 				$res = db_select($query);
-				$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", array(0, LOG_DOWNLOAD, $fid, $ip));
+				$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`, `desc`) VALUES (NOW(), #, #, #, !, !)", array(0, LOG_DOWNLOAD, $fid, $ip, @$_SERVER['HTTP_RANGE']));
 				db_put($query);
 				db_disconnect();
 				if($res !== FALSE)
 				{
 					if(empty($res[0][0]) || (strcmp($res[0][0], $pin) == 0))
 					{
-						$fs = filesize(UPLOAD_DIR."/f".$res[0][1]);
+						$fs = filesize(UPLOAD_DIR.'/f'.$res[0][1]);
 						if($fs != intval($res[0][3]))
 						{
-							$error_msg = "File corrupted";
+							$error_msg = 'File corrupted';
 							include('templ/tpl.error.php');
 							exit;
 						}
@@ -237,6 +237,8 @@ function tar_subdir($lid, $id, $path)
 
 							//error_log('Content-Range: bytes '.$pos_s.'-'.$pos_e.'/'.$fs);
 							header('HTTP/1.1 206 Partial Content');
+							header('Accept-Ranges: bytes');
+							header('Content-Length: '.$pos_e - $pos_s + 1);
 							header('Content-Range: bytes '.$pos_s.'-'.$pos_e.'/'.$fs);
 							$fh = fopen(UPLOAD_DIR."/f".$res[0][1], 'rb');
 							if(fseek($fh, $pos_s, SEEK_SET) == 0)
@@ -260,10 +262,11 @@ function tar_subdir($lid, $id, $path)
 						}
 						else
 						{
-							header("Content-Type: application/octet-stream");
-							header("Content-Length: ".$fs);
+							header('Content-Type: application/octet-stream');
+							header('Accept-Ranges: bytes');
+							header('Content-Length: '.$fs);
 							//header("Content-Disposition: attachment; filename=\"".rawurlencode($res[0][1])."\"; filename*=\"utf-8''".rawurlencode($res[0][2]));
-							readfile(UPLOAD_DIR."/f".$res[0][1]);
+							readfile(UPLOAD_DIR.'/f'.$res[0][1]);
 						}
 						exit;
 					}
