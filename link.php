@@ -272,14 +272,14 @@ function tar_subdir($lid, $id, $path)
 									//error_log('pos_s = '.$pos_s);
 									//echo fgetc($fh);
 									//$pos_s++;
-									if(($pos_s + 1048576) > $pos_e)
+									if(($pos_s + 10485760) > $pos_e)
 									{
 										echo fread($fh, $pos_e - $pos_s + 1);
 										break;
 									}
 
-									echo fread($fh, 1048576);
-									$pos_s += 1048576;
+									echo fread($fh, 10485760);
+									$pos_s += 10485760;
 									flush();
 								}
 							}
