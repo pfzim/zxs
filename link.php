@@ -182,9 +182,13 @@ function tar_subdir($lid, $id, $path)
 		$fid = intval($_GET['fid']);
 	}
 
+	$mime = '';
+	
 	switch($action)
 	{
 		case 'download':
+			$mime = 'application/octet-stream';
+		case 'open':
 		{
 			if($fid && $id)
 			{
@@ -198,13 +202,16 @@ function tar_subdir($lid, $id, $path)
 				{
 					if(empty($res[0][0]) || (strcmp($res[0][0], $pin) == 0))
 					{
-						$finfo = finfo_open(FILEINFO_MIME_TYPE);
-						$mime = finfo_file($finfo, UPLOAD_DIR.'/f'.$res[0][1]);
-						finfo_close($finfo);
-						
-						if($mime === FALSE)
+						if(empty($mime))
 						{
-							$mime = 'application/octet-stream';
+							$finfo = finfo_open(FILEINFO_MIME_TYPE);
+							$mime = finfo_file($finfo, UPLOAD_DIR.'/f'.$res[0][1]);
+							finfo_close($finfo);
+							
+							if($mime === FALSE)
+							{
+								$mime = 'application/octet-stream';
+							}
 						}
 						
 						$fs = filesize(UPLOAD_DIR.'/f'.$res[0][1]);
