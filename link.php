@@ -198,6 +198,15 @@ function tar_subdir($lid, $id, $path)
 				{
 					if(empty($res[0][0]) || (strcmp($res[0][0], $pin) == 0))
 					{
+						$finfo = finfo_open(FILEINFO_MIME_TYPE);
+						$mime = finfo_file($finfo, UPLOAD_DIR.'/f'.$res[0][1]);
+						finfo_close($finfo);
+						
+						if($mime === FALSE)
+						{
+							$mime = 'application/octet-stream';
+						}
+						
 						$fs = filesize(UPLOAD_DIR.'/f'.$res[0][1]);
 						if($fs != intval($res[0][3]))
 						{
@@ -215,18 +224,18 @@ function tar_subdir($lid, $id, $path)
 								exit;
 							}
 							list($pos_s, $pos_e) = explode('-', substr($_SERVER['HTTP_RANGE'], 6));
-							if(empty($pos_s) && empty($pos_e))
+							if(($pos_s == '') && ($pos_e == ''))
 							{
 								header('HTTP/1.1 416 Requested Range Not Satisfiable');
 								header('Content-Range: bytes */'.$fs);
 								exit;
 							}
 
-							if(empty($pos_e))
+							if($pos_e == '')
 							{
 								$pos_e = $fs - 1;
 							}
-							else if(empty($pos_s))
+							else if($pos_s == '')
 							{
 								$pos_s = $fs - intval($pos_e);
 								$pos_e = $fs - 1;
@@ -247,6 +256,7 @@ function tar_subdir($lid, $id, $path)
 							header('Accept-Ranges: bytes');
 							header('Content-Length: '.$pos_e - $pos_s + 1);
 							header('Content-Range: bytes '.$pos_s.'-'.$pos_e.'/'.$fs);
+							header('Content-Type: '.$mime);
 							$fh = fopen(UPLOAD_DIR."/f".$res[0][1], 'rb');
 							if(fseek($fh, $pos_s, SEEK_SET) == 0)
 							{
@@ -263,13 +273,14 @@ function tar_subdir($lid, $id, $path)
 
 									echo fread($fh, 1048576);
 									$pos_s += 1048576;
+									flush();
 								}
 							}
 							fclose($fh);
 						}
 						else
 						{
-							header('Content-Type: application/octet-stream');
+							header('Content-Type: '.$mime);
 							header('Accept-Ranges: bytes');
 							header('Content-Length: '.$fs);
 							//header("Content-Disposition: attachment; filename=\"".rawurlencode($res[0][1])."\"; filename*=\"utf-8''".rawurlencode($res[0][2]));
