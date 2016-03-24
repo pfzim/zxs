@@ -19,6 +19,7 @@
 			<li><a href="/all-links/">All links</a></li>
 			<?php } ?>
 			<ul style="float:right;list-style-type:none;">
+				<li><a href="/stats/">Top users</a></li>
 				<li><a href="/info/">About</a></li>
 				<li><a href="/logoff/">Logout</a></li>
 			</ul>

@@ -231,7 +231,7 @@ function delete_expired()
 			}
 			
 			db_connect();
-			$query = rpv_v2("SELECT m.`id`, m.`pin`, m.`desc`, j1.`login`, DATE_FORMAT(m.`date`, '%d.%m.%Y'), DATE_FORMAT(m.`date`, '%d.%m.%Y %k:%i:%s') FROM `zxs_links` AS m LEFT JOIN zxs_users AS j1 ON j1.`id` = m.`uid` WHERE m.`deleted` = 0 ORDER BY m.`id` DESC", array($uid));
+			$query = "SELECT m.`id`, m.`pin`, m.`desc`, j1.`login`, DATE_FORMAT(m.`date`, '%d.%m.%Y'), DATE_FORMAT(m.`date`, '%d.%m.%Y %k:%i:%s') FROM `zxs_links` AS m LEFT JOIN zxs_users AS j1 ON j1.`id` = m.`uid` WHERE m.`deleted` = 0 ORDER BY m.`id` DESC";
 			$res = db_select($query);
 			db_disconnect();
 			if($res === FALSE)
@@ -266,6 +266,20 @@ function delete_expired()
 			{
 			}
 			include('templ/tpl.all.php');
+			exit;
+		}
+		case 'stats':
+		{
+			db_connect();
+			$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", array($uid, LOG_VIEW_STATS, 0, $ip));
+			db_put($query);
+			$query = "SELECT m.`login`, COUNT(j1.`id`) AS `uploads` FROM zxs_users AS m LEFT JOIN zxs_files AS j1 ON j1.`uid` = m.`id` AND j1.`type` = 0 GROUP BY m.`id` ORDER BY `uploads` DESC";
+			$res = db_select($query);
+			db_disconnect();
+			if($res === FALSE)
+			{
+			}
+			include('templ/tpl.top-users.php');
 			exit;
 		}
 		case 'info':

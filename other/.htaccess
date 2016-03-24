@@ -16,5 +16,6 @@ RewriteRule ^all/?$ zxs.php?action=all
 RewriteRule ^all/(\d+)/?$ zxs.php?action=all&id=$1
 RewriteRule ^all-links/?$ zxs.php?action=all-links
 RewriteRule ^all-links/(\d+)/?$ zxs.php?action=all-links&id=$1
+RewriteRule ^stats/?$ zxs.php?action=stats
 RewriteRule ^info/?$ zxs.php?action=info
 RewriteRule ^logoff/?$ zxs.php?action=logoff

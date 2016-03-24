@@ -9,10 +9,11 @@
 	define("ALLOW_MAILS", '^.+@.+$');
 
 	define("LOG_LOGIN", 1);
-	define("LOG_LOGIN_FAILED", 3);
-	define("LOG_LOGIN_ACTIVATE", 6);
-	define("LOG_VIEW_ABOUT", 4);
 	define("LOG_DOWNLOAD", 2);			// p1 - file_id
+	define("LOG_LOGIN_FAILED", 3);
+	define("LOG_VIEW_ABOUT", 4);
 	define("LOG_TAR_CREATE", 5);		// p1 - link_id
+	define("LOG_LOGIN_ACTIVATE", 6);
+	define("LOG_VIEW_STATS", 7);
 
 	define("RPV_PREFIX", DB_PREFIX);
