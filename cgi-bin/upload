@@ -29,7 +29,7 @@ sub addslashes
     my $text = shift;
 
     $text =~ s/\\/\\\\/g;
-    $text =~ s/'/\\'/g;
+    #$text =~ s/'/\\'/g;
     $text =~ s/"/\\"/g;
     $text =~ s/\\0/\\\\0/g;
     
