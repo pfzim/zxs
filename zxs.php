@@ -101,7 +101,7 @@ function delete_expired()
 				}
 				db_connect();
 				delete_expired();
-				$query = rpv_v2("SELECT m.`id` FROM zxs_users AS m WHERE m.`login` = ! AND m.`passwd` = ! AND m.`deleted` = 0 LIMIT 1", array(@$_POST['login'], @$_POST['passwd']));
+				$query = rpv_v2("SELECT m.`id` FROM zxs_users AS m WHERE m.`login` = ! AND m.`passwd` = PASSWORD(!) AND m.`deleted` = 0 LIMIT 1", array(@$_POST['login'], @$_POST['passwd']));
 				$res = db_select($query);
 				if($res === FALSE)
 				{
@@ -151,7 +151,7 @@ function delete_expired()
 					include('templ/tpl.register.php');
 					exit;
 				}
-				$query = rpv_v2("INSERT INTO zxs_users (login, passwd, mail, deleted) VALUES (!, !, !, 0)", array(@$_POST['login'], @$_POST['passwd'], @$_POST['mail']));
+				$query = rpv_v2("INSERT INTO zxs_users (login, passwd, mail, deleted) VALUES (!, PASSWORD(!), !, 0)", array(@$_POST['login'], @$_POST['passwd'], @$_POST['mail']));
 				$res = db_put($query);
 				//mail();
 				db_disconnect();
