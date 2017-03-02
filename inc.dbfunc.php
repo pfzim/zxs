@@ -7,7 +7,7 @@ function db_connect()
 {
 	global $link;
 	global $error_msg;
-	
+
 	$link = mysqli_connect(DB_HOST, DB_USER, DB_PASSWD, DB_NAME);
 	if($link)
 	{
@@ -19,7 +19,7 @@ function db_connect()
 			return NULL;
 		}
 	}
-	
+
 	return $link;
 }
 
@@ -27,7 +27,7 @@ function db_select($query)
 {
 	global $link;
 	global $error_msg;
-	
+
 	if(!$link)
 	{
 		return FALSE;
@@ -39,21 +39,21 @@ function db_select($query)
 		$error_msg = mysqli_error($link);
 		return FALSE;
 	}
-	
+
 	if(mysqli_num_rows($res) <= 0)
 	{
-		return FALSE;		
+		return FALSE;
 	}
 
 	$out = array();
-	
+
 	while($row = mysqli_fetch_row($res))
 	{
 		$out[] = $row;
 	}
-	
+
 	mysqli_free_result($res);
-	
+
 	return $out;
 }
 
@@ -61,7 +61,7 @@ function db_put($query)
 {
 	global $link;
 	global $error_msg;
-	
+
 	if(!$link)
 	{
 		return FALSE;
@@ -73,21 +73,21 @@ function db_put($query)
 		$error_msg = mysqli_error($link);
 		return FALSE;
 	}
-	
+
 	return mysqli_affected_rows($link);
 }
 
 function db_last_id()
 {
 	global $link;
-	
+
 	return mysqli_insert_id($link);
 }
 
 function db_disconnect()
 {
 	global $link;
-	
+
 	if($link)
 	{
 		mysqli_close($link);

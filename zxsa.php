@@ -17,53 +17,53 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-function update_link($lid)
+function update_link($db, $lid)
 {
-	$query = rpv_v2("DELETE FROM `zxs_link_files` WHERE `pid` <> 0 AND `lid` = #", array($lid));
-	db_put($query);
-	
-	$query = rpv_v2("SELECT m.`fid`, j1.`uid` FROM `zxs_link_files` AS m LEFT JOIN `zxs_links` AS j1 ON j1.`id` = m.`lid` LEFT JOIN `zxs_files` AS j2 ON j2.`id` = m.`fid` WHERE m.`lid` = # AND m.`pid` = 0 AND j2.`type` = 1 AND j1.`deleted` = 0 AND j2.`deleted` = 0", array($lid));
-	$res = db_select($query);
-	if($res !== FALSE) foreach($res as $row)
-	{
-		share_subdir($row[1], $lid, $row[0]);
-	}
-}
+	$db->put(rpv("DELETE FROM `zxs_link_files` WHERE `pid` <> 0 AND `lid` = #", $lid));
 
-function share_subdir($uid, $lid, $id)
-{
-	$query = rpv_v2("SELECT m.`id`, m.`type` FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`pid` = # AND m.`deleted` = 0", array($uid, $id));
-	$res = db_select($query);
-	if($res !== FALSE) foreach($res as $row)
+	if($db->select(rpv("SELECT m.`fid`, j1.`uid` FROM `zxs_link_files` AS m LEFT JOIN `zxs_links` AS j1 ON j1.`id` = m.`lid` LEFT JOIN `zxs_files` AS j2 ON j2.`id` = m.`fid` WHERE m.`lid` = # AND m.`pid` = 0 AND j2.`type` = 1 AND j1.`deleted` = 0 AND j2.`deleted` = 0", $lid)))
 	{
-		$query = rpv_v2("INSERT INTO `zxs_link_files` (`lid`, `fid`, `pid`) VALUES (#, #, #)", array($lid, $row[0], $id));
-		db_put($query);
-		
-		if($row[1])
+		foreach($db->data as $row)
 		{
-			share_subdir($uid, $lid, $row[0]);
+			share_subdir($row[1], $lid, $row[0]);
 		}
 	}
 }
 
-function delete_subdir($uid, $id)
+function share_subdir($db, $uid, $lid, $id)
 {
-	$query = rpv_v2("SELECT m.`id`, m.`type` FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`pid` = # AND m.`deleted` = 0", array($uid, $id));
-	$res = db_select($query);
-	if($res !== FALSE) foreach($res as $row)
+	if($db->select(rpv("SELECT m.`id`, m.`type` FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`pid` = # AND m.`deleted` = 0", $uid, $id)))
 	{
-		$query = rpv_v2("UPDATE `zxs_files` SET `deleted` = 1 WHERE `uid` = # AND `id` = # LIMIT 1", array($uid, $row[0]));
-		db_put($query);
-		if($row[1])
+		foreach($db->data as $row)
 		{
-			delete_subdir($uid, $row[0]);
-		}
-		else
-		{
-			unlink(UPLOAD_DIR."/f".$row[0]);
+			$db->put(rpv("INSERT INTO `zxs_link_files` (`lid`, `fid`, `pid`) VALUES (#, #, #)", $lid, $row[0], $id));
+			if($row[1])
+			{
+				share_subdir($db, $uid, $lid, $row[0]);
+			}
 		}
 	}
-}	
+}
+
+function delete_subdir($db, $uid, $id)
+{
+
+	if($db->select(rpv("SELECT m.`id`, m.`type` FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`pid` = # AND m.`deleted` = 0", $uid, $id)))
+	{
+		foreach($db->data as $row)
+		{
+			$db->put(rpv("UPDATE `zxs_files` SET `deleted` = 1 WHERE `uid` = # AND `id` = # LIMIT 1", $uid, $row[0]));
+			if($row[1])
+			{
+				delete_subdir($db, $uid, $row[0]);
+			}
+			else
+			{
+				unlink(UPLOAD_DIR."/f".$row[0]);
+			}
+		}
+	}
+}
 
 	session_name("ZXSID");
 	session_start();
@@ -80,8 +80,8 @@ function delete_subdir($uid, $id)
 		$uid = $_SESSION['uid'];
 	}
 
-	include('inc.dbfunc.php');
-	include('inc.utils.php');
+	require_once('inc.db.php');
+	require_once('inc.utils.php');
 
 	$action = "";
 	if(isset($_GET['action']))
@@ -95,24 +95,23 @@ function delete_subdir($uid, $id)
 		$id = $_GET['id'];
 	}
 
+	$db = new MySQLDB();
+	$db->connect();
+
 	if(empty($uid))
 	{
 		if(!empty(@$_COOKIE['zxsh']) && !empty(@$_COOKIE['zxsl']))
 		{
-			db_connect();
-			$query = rpv_v2("SELECT m.`id` FROM zxs_users AS m WHERE m.`login` = ! AND m.`sid` IS NOT NULL AND m.`sid` = ! AND m.`deleted` = 0 LIMIT 1", array($_COOKIE['zxsl'], $_COOKIE['zxsh']));
-			$res = db_select($query);
-			db_disconnect();
-			if($res !== FALSE)
+			if($db->select(rpv("SELECT m.`id` FROM zxs_users AS m WHERE m.`login` = ! AND m.`sid` IS NOT NULL AND m.`sid` = ! AND m.`deleted` = 0 LIMIT 1", $_COOKIE['zxsl'], $_COOKIE['zxsh'])))
 			{
-				$_SESSION['uid'] = $res[0][0];
+				$_SESSION['uid'] = $db->data[0][0];
 				$uid = $_SESSION['uid'];
 				setcookie("zxsh", @$_COOKIE['zxsh'], time()+2592000, '/');
 				setcookie("zxsl", @$_COOKIE['zxsl'], time()+2592000, '/');
 			}
 		}
 	}
-	
+
 	if(empty($uid))
 	{
 		echo '{"result": 1, "status": "Log in, please"}';
@@ -128,12 +127,11 @@ function delete_subdir($uid, $id)
 				echo '{"result": 1, "status": "name undefined"}';
 				exit;
 			}
-			db_connect();
-			$query = rpv_v2("INSERT INTO `zxs_files` (`uid`, `pid`, `type`, `name`, `date`) VALUES (#, #, 1, !, NOW())", array($uid, $id, @$_POST['name']));
-			$res = db_put($query);
-			$id = db_last_id();
-			db_disconnect();
-			echo '{"result": 0, "id": '.$id.', "name": "'.addcslashes($_POST['name'], '"\\').'", "desc": ""}';
+
+			$db->put(rpv("INSERT INTO `zxs_files` (`uid`, `pid`, `type`, `name`, `date`) VALUES (#, #, 1, !, NOW())", $uid, $id, @$_POST['name']));
+			$id = $db->last_id();
+
+			echo '{"result": 0, "id": '.$id.', "name": "'.json_escape($_POST['name']).'", "desc": ""}';
 			exit;
 		}
 		case 'delete':
@@ -143,14 +141,11 @@ function delete_subdir($uid, $id)
 				echo '{"result": 1, "status": "id undefined"}';
 				exit;
 			}
-			db_connect();
-			$query = rpv_v2("SELECT m.`type` FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`id` = # AND m.`deleted` = 0 LIMIT 1", array($uid, $id));
-			$res = db_select($query);
-			if($res !== FALSE)
+
+			if($db->select(rpv("SELECT m.`type` FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`id` = # AND m.`deleted` = 0 LIMIT 1", $uid, $id)))
 			{
-				$type = intval($res[0][0]);
-				$query = rpv_v2("UPDATE `zxs_files` SET `deleted` = 1 WHERE `uid` = # AND `id` = # LIMIT 1", array($uid, $id));
-				$res = db_put($query);
+				$type = intval($db->data[0][0]);
+				$db->put(rpv("UPDATE `zxs_files` SET `deleted` = 1 WHERE `uid` = # AND `id` = # LIMIT 1", $uid, $id));
 				if($type == 0)
 				{
 					unlink(UPLOAD_DIR."/f".$id);
@@ -160,7 +155,7 @@ function delete_subdir($uid, $id)
 					delete_subdir($uid, $id);
 				}
 			}
-			db_disconnect();
+
 			$id = 0;
 			echo '{"result": 0}';
 			exit;
@@ -173,16 +168,13 @@ function delete_subdir($uid, $id)
 				exit;
 			}
 
-			db_connect();
 			foreach($_POST['fid'] as $id)
 			{
-				$query = rpv_v2("SELECT m.`type` FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`id` = # AND m.`deleted` = 0 LIMIT 1", array($uid, $id));
-				$res = db_select($query);
-				if($res !== FALSE)
+				if($db->select(rpv("SELECT m.`type` FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`id` = # AND m.`deleted` = 0 LIMIT 1", $uid, $id)))
 				{
-					$type = intval($res[0][0]);
-					$query = rpv_v2("UPDATE `zxs_files` SET `deleted` = 1 WHERE `uid` = # AND `id` = # LIMIT 1", array($uid, $id));
-					$res = db_put($query);
+					$type = intval($db->data[0][0]);
+
+					$db->put(rpv("UPDATE `zxs_files` SET `deleted` = 1 WHERE `uid` = # AND `id` = # LIMIT 1", $uid, $id));
 					if($type == 0)
 					{
 						unlink(UPLOAD_DIR."/f".$id);
@@ -193,8 +185,7 @@ function delete_subdir($uid, $id)
 					}
 				}
 			}
-			db_disconnect();
-			
+
 			echo '{"result": 0}';
 			exit;
 		}
@@ -210,11 +201,9 @@ function delete_subdir($uid, $id)
 				echo '{"result": 1, "status": "name undefined"}';
 				exit;
 			}
-			db_connect();
-			$query = rpv_v2("UPDATE `zxs_files` SET `name` = ! WHERE `uid` = # AND `id` = # LIMIT 1", array($_POST['name'], $uid, $id));
-			$res = db_put($query);
-			db_disconnect();
-			echo '{"result": 0, "id": '.$id.', "name": "'.addcslashes($_POST['name'], '"\\').'"}';
+
+			$db->put(rpv("UPDATE `zxs_files` SET `name` = ! WHERE `uid` = # AND `id` = # LIMIT 1", $_POST['name'], $uid, $id));
+			echo '{"result": 0, "id": '.$id.', "name": "'.json_escape($_POST['name']).'"}';
 			exit;
 		}
 		case 'expire':
@@ -226,10 +215,7 @@ function delete_subdir($uid, $id)
 			}
 			if(empty($_POST['date']))
 			{
-				db_connect();
-				$query = rpv_v2("UPDATE `zxs_files` SET `expire` = NULL WHERE `uid` = # AND `id` = # LIMIT 1", array($uid, $id));
-				$res = db_put($query);
-				db_disconnect();
+				$db->put(rpv("UPDATE `zxs_files` SET `expire` = NULL WHERE `uid` = # AND `id` = # LIMIT 1", $uid, $id));
 
 				echo '{"result": 0, "id": '.$id.', "date": ""}';
 			}
@@ -249,12 +235,9 @@ function delete_subdir($uid, $id)
 					exit;
 				}
 
-				db_connect();
-				$query = rpv_v2("UPDATE `zxs_files` SET `expire` = ! WHERE `uid` = # AND `id` = # LIMIT 1", array(sprintf("%04d-%02d-%02d", $ny, $nm, $nd), $uid, $id));
-				$res = db_put($query);
-				db_disconnect();
+				$db->put(rpv("UPDATE `zxs_files` SET `expire` = ! WHERE `uid` = # AND `id` = # LIMIT 1", sprintf("%04d-%02d-%02d", $ny, $nm, $nd), $uid, $id));
 
-				echo '{"result": 0, "id": '.$id.', "date": "'.addcslashes(sprintf("%02d.%02d.%04d", $nd, $nm, $ny), '"\\').'"}';
+				echo '{"result": 0, "id": '.$id.', "date": "'.json_escape(sprintf("%02d.%02d.%04d", $nd, $nm, $ny)).'"}';
 			}
 			exit;
 		}
@@ -265,11 +248,10 @@ function delete_subdir($uid, $id)
 				echo '{"result": 1, "status": "id undefined"}';
 				exit;
 			}
-			db_connect();
-			$query = rpv_v2("UPDATE `zxs_files` SET `desc` = ! WHERE `uid` = # AND `id` = # LIMIT 1", array(@$_POST['name'], $uid, $id));
-			$res = db_put($query);
-			db_disconnect();
-			echo '{"result": 0, "id": '.$id.', "desc": "'.addcslashes(@$_POST['name'], '"\\').'"}';
+
+			$db->put(rpv("UPDATE `zxs_files` SET `desc` = ! WHERE `uid` = # AND `id` = # LIMIT 1", @$_POST['name'], $uid, $id));
+
+			echo '{"result": 0, "id": '.$id.', "desc": "'.json_escape(@$_POST['name']).'"}';
 			exit;
 		}
 		case 'desc_link':
@@ -279,11 +261,10 @@ function delete_subdir($uid, $id)
 				echo '{"result": 1, "status": "id undefined"}';
 				exit;
 			}
-			db_connect();
-			$query = rpv_v2("UPDATE `zxs_links` SET `desc` = ! WHERE `uid` = # AND `id` = # LIMIT 1", array(@$_POST['name'], $uid, $id));
-			$res = db_put($query);
-			db_disconnect();
-			echo '{"result": 0, "id": '.$id.', "desc": "'.addcslashes(@$_POST['name'], '"\\').'"}';
+
+			$db->put(rpv("UPDATE `zxs_links` SET `desc` = ! WHERE `uid` = # AND `id` = # LIMIT 1", @$_POST['name'], $uid, $id));
+
+			echo '{"result": 0, "id": '.$id.', "desc": "'.json_escape(@$_POST['name']).'"}';
 			exit;
 		}
 		case 'pinon':
@@ -293,11 +274,11 @@ function delete_subdir($uid, $id)
 				echo '{"result": 1, "status": "id undefined"}';
 				exit;
 			}
-			db_connect();
+
 			$pin = rand(0, 9).rand(0, 9).rand(0, 9).rand(0, 9);
-			$query = rpv_v2("UPDATE `zxs_links` SET `pin` = ! WHERE `id` = # LIMIT 1", array($pin, $id));
-			$res = db_put($query);
-			db_disconnect();
+
+			$db->put(rpv("UPDATE `zxs_links` SET `pin` = ! WHERE `id` = # LIMIT 1", $pin, $id));
+
 			echo '{"result": 0, "id": '.$id.', "pin": "'.$pin.'"}';
 			exit;
 		}
@@ -308,10 +289,9 @@ function delete_subdir($uid, $id)
 				echo '{"result": 1, "status": "id undefined"}';
 				exit;
 			}
-			db_connect();
-			$query = rpv_v2("UPDATE `zxs_links` SET `pin` = '' WHERE `id` = # LIMIT 1", array($id));
-			$res = db_put($query);
-			db_disconnect();
+
+			$db->put(rpv("UPDATE `zxs_links` SET `pin` = '' WHERE `id` = # LIMIT 1", $id));
+
 			echo '{"result": 0, "id": '.$id.', "pin": ""}';
 			exit;
 		}
@@ -324,20 +304,16 @@ function delete_subdir($uid, $id)
 				exit;
 			}
 			$lid = 0;
-			db_connect();
-			$query = rpv_v2("SELECT m.`type`, m.`name` FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`id` = # AND m.`deleted` = 0 LIMIT 1", array($uid, $id));
-			$res = db_select($query);
-			if($res !== FALSE)
+
+			if($db->select(rpv("SELECT m.`type`, m.`name` FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`id` = # AND m.`deleted` = 0 LIMIT 1", $uid, $id)))
 			{
 				$pin = rand(0, 9).rand(0, 9).rand(0, 9).rand(0, 9);
-				$query = rpv_v2("INSERT INTO `zxs_links` (`uid`, `pin`, `desc`, `date`) VALUES (#, !, !, NOW())", array($uid, $pin, $res[0][1]));
-				db_put($query);
-				$lid = db_last_id();
-				
-				$query = rpv_v2("INSERT INTO `zxs_link_files` (`lid`, `fid`, `pid`) VALUES (#, #, 0)", array($lid, $id));
-				db_put($query);
+
+				$db->put(rpv("INSERT INTO `zxs_links` (`uid`, `pin`, `desc`, `date`) VALUES (#, !, !, NOW())", $uid, $pin, $db->data[0][1]));
+				$lid = $db->last_id();
+
+				$db->put(rpv("INSERT INTO `zxs_link_files` (`lid`, `fid`, `pid`) VALUES (#, #, 0)", $lid, $id));
 			}
-			db_disconnect();
 
 			echo '{"result": 0, "id": '.$lid.', "pin": "'.$pin.'"}';
 			exit;
@@ -350,40 +326,37 @@ function delete_subdir($uid, $id)
 				echo '{"result": 1, "status": "fid undefined"}';
 				exit;
 			}
-			db_connect();
+
 			$pin = rand(0, 9).rand(0, 9).rand(0, 9).rand(0, 9);
-			$query = rpv_v2("INSERT INTO `zxs_links` (`uid`, `pin`, `date`) VALUES (#, !, NOW())", array($uid, $pin));
-			db_put($query);
-			$lid = db_last_id();
+
+			$db->put(rpv("INSERT INTO `zxs_links` (`uid`, `pin`, `date`) VALUES (#, !, NOW())", $uid, $pin));
+			$lid = $db->last_id();
 
 			$i = 0;
 			$desc = '';
 			foreach($_POST['fid'] as $id)
 			{
-				$query = rpv_v2("SELECT m.`type`, m.`name` FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`id` = # AND m.`deleted` = 0 LIMIT 1", array($uid, $id));
-				$res = db_select($query);
-				if($res !== FALSE)
+				if($db->select(rpv("SELECT m.`type`, m.`name` FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`id` = # AND m.`deleted` = 0 LIMIT 1", $uid, $id)))
 				{
 					$i++;
 					if($i == 1)
 					{
-						$desc = $res[0][1];
+						$desc = $db->data[0][1];
 					}
 					else if($i < 4)
 					{
-						$desc .= ', '.$res[0][1];
+						$desc .= ', '.$db->data[0][1];
 					}
 					else if($i == 4)
 					{
 						$desc .= ', ...';
 					}
-					$query = rpv_v2("INSERT INTO `zxs_link_files` (`lid`, `fid`, `pid`) VALUES (#, #, 0)", array($lid, $id));
-					db_put($query);
+
+					$db->put(rpv("INSERT INTO `zxs_link_files` (`lid`, `fid`, `pid`) VALUES (#, #, 0)", $lid, $id));
 				}
 			}
-			$query = rpv_v2("UPDATE `zxs_links` SET `desc` = ! WHERE `id` = # LIMIT 1", array($desc, $lid));
-			db_put($query);
-			db_disconnect();
+
+			$db->put(rpv("UPDATE `zxs_links` SET `desc` = ! WHERE `id` = # LIMIT 1", $desc, $lid));
 
 			echo '{"result": 0, "id": '.$lid.', "pin": "'.$pin.'"}';
 			exit;
@@ -395,16 +368,14 @@ function delete_subdir($uid, $id)
 				echo '{"result": 1, "status": "id undefined"}';
 				exit;
 			}
-			db_connect();
-			//$query = rpv_v2("DELETE FROM `zxs_links` WHERE `uid` = # AND `id` = # LIMIT 1", array($uid, $id));
-			//$res = db_put($query);
-			//$query = rpv_v2("DELETE FROM `zxs_link_files` WHERE `lid` = #", array($id));
-			//$res = db_put($query);
-			$query = rpv_v2("UPDATE `zxs_links` SET `deleted` = 1 WHERE `uid` = # AND `id` = # LIMIT 1", array($uid, $id));
-			db_put($query);
-			$query = rpv_v2("DELETE FROM `zxs_link_files` WHERE `pid` <> 0 AND `lid` = #", array($id));
-			db_put($query);
-			db_disconnect();
+			//--db_connect();
+			//rpv("DELETE FROM `zxs_links` WHERE `uid` = # AND `id` = # LIMIT 1", array($uid, $id));
+			//$res = $db->put($query);
+			//rpv("DELETE FROM `zxs_link_files` WHERE `lid` = #", array($id));
+			//$res = $db->put($query);
+
+			$db->put(rpv("UPDATE `zxs_links` SET `deleted` = 1 WHERE `uid` = # AND `id` = # LIMIT 1", $uid, $id));
+			$db->put(rpv("DELETE FROM `zxs_link_files` WHERE `pid` <> 0 AND `lid` = #", $id));
 			$id = 0;
 
 			echo '{"result": 0}';
@@ -423,23 +394,20 @@ function delete_subdir($uid, $id)
 				$pid = $_GET['pid'];
 			}
 
-			db_connect();
 			update_link($id);
 			$list = '';
-			$query = rpv_v2("SELECT m.`fid`, j1.`name`, j1.`type`, j1.`size`, j1.`desc`, DATE_FORMAT(j1.`date`, '%d.%m.%Y'), DATE_FORMAT(j1.`expire`, '%d.%m.%Y') FROM zxs_link_files AS m LEFT JOIN zxs_files AS j1 ON j1.`id` = m.`fid` WHERE j1.`uid` = # AND m.`lid` = # AND m.`pid` = # AND j1.`deleted` = 0 ORDER BY j1.`type` DESC, j1.`name`", array($uid, $id, $pid));
-			$res = db_select($query);
-			if($res !== FALSE)
+
+			if($db->select(rpv("SELECT m.`fid`, j1.`name`, j1.`type`, j1.`size`, j1.`desc`, DATE_FORMAT(j1.`date`, '%d.%m.%Y'), DATE_FORMAT(j1.`expire`, '%d.%m.%Y') FROM zxs_link_files AS m LEFT JOIN zxs_files AS j1 ON j1.`id` = m.`fid` WHERE j1.`uid` = # AND m.`lid` = # AND m.`pid` = # AND j1.`deleted` = 0 ORDER BY j1.`type` DESC, j1.`name`", $uid, $id, $pid)))
 			{
-				foreach($res as $row)
+				foreach($db->data as $row)
 				{
 					if(!empty($list))
 					{
 						$list .= ', ';
 					}
-					$list .= '{"id": '.$row[0].', "name": "'.addcslashes($row[1], '"\\').'", "type": '.$row[2].', "size": '.$row[3].', "desc": "'.addcslashes($row[4], '"\\').'", "date": "'.$row[5].'", "expire": "'.$row[6].'"}';
+					$list .= '{"id": '.$row[0].', "name": "'.json_escape($row[1]).'", "type": '.$row[2].', "size": '.$row[3].', "desc": "'.json_escape($row[4]).'", "date": "'.$row[5].'", "expire": "'.$row[6].'"}';
 				}
 			}
-			db_disconnect();
 
 			echo '{"result": 0, "list": ['.$list.']}';
 			exit;

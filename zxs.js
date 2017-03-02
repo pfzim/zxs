@@ -24,21 +24,21 @@ function formatbytes(bytes, decimals) {
    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
-if(!XMLHttpRequest.prototype.sendAsBinary) { 
-	XMLHttpRequest.prototype.sendAsBinary = function(datastr) {  
+if(!XMLHttpRequest.prototype.sendAsBinary) {
+	XMLHttpRequest.prototype.sendAsBinary = function(datastr) {
 		function byteValue(x)
 		{
 			return x.charCodeAt(0) & 0xff;
 		}
 		var ords = Array.prototype.map.call(datastr, byteValue);
-		var ui8a = new Uint8Array(ords);  
+		var ui8a = new Uint8Array(ords);
 		try {
 			this.send(ui8a);
 		}
 		catch(e) {
 			this.send(ui8a.buffer);
-		}  
-	};  
+		}
+	};
 }
 
 function f_xhr() {
@@ -104,7 +104,7 @@ function f_copy0(text) {
 	catch (err) { }
 
 	document.body.removeChild(textArea);
-	
+
 	return false;
 }
 
@@ -114,7 +114,7 @@ function f_popup(title, text)
 	gi('fade').style.display='block';
 	gi("status").textContent = text;
 	gi("caption").textContent = title;
-	
+
 	return false;
 }
 
@@ -124,7 +124,7 @@ function f_popupHTML(title, text)
 	gi('fade').style.display='block';
 	gi("status").innerHTML = text;
 	gi("caption").textContent = title;
-	
+
 	return false;
 }
 
@@ -160,7 +160,7 @@ function f_delete(id)
 			xhr.send(null);
 		}
 	}
-	
+
 	return false;
 }
 
@@ -196,7 +196,7 @@ function f_unlink(id)
 			xhr.send(null);
 		}
 	}
-	
+
 	return false;
 }
 
@@ -236,7 +236,7 @@ function f_rename_event(event, el, id, old)
 				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 				xhr.send("name="+encodeURIComponent(el.value));
 			}
-		}	
+		}
 	}
 	else if(event == 27)
 	{
@@ -448,7 +448,7 @@ function f_share(id)
 						//f_popupHTML("Link created", window.location.protocol+'//'+window.location.hostname+window.location.pathname.replace('zxs.php','link.php')+'?id='+r.id+' PIN: ' + r.pin + ' <a href="link.php?id=' + r.id + '" onclick="return f_copy0(this.href + \' PIN: ' + r.pin + '\');">Copy</a>');
 						f_popupHTML("Link created", 'http://'+window.location.hostname+'/link/'+r.id+'/&nbsp;&nbsp;&nbsp;&nbsp;PIN: ' + r.pin + '&nbsp;&nbsp;&nbsp;&nbsp;<a href="/link/' + r.id + '/" onclick="return f_copy0(this.href + \'    PIN: ' + r.pin + '\');">Copy</a>');
 					}
-						
+
 				}
 				else
 				{
@@ -458,7 +458,7 @@ function f_share(id)
 		};
 		xhr.send(null);
 	}
-	
+
 	return false;
 }
 
@@ -490,7 +490,7 @@ function f_pinoff(id)
 		};
 		xhr.send(null);
 	}
-	
+
 	return false;
 }
 
@@ -522,7 +522,7 @@ function f_pinon(id)
 		};
 		xhr.send(null);
 	}
-	
+
 	return false;
 }
 
@@ -596,7 +596,7 @@ function f_delete_selected(el)
 	{
 		return false;
 	}
-	
+
 	var postdata = "";
 	var j = 0;
 	var rows = [];
@@ -849,7 +849,7 @@ function f_upload0(uid, id, file, k)
 						row.cells[6].innerHTML = '<span id="expire'+result.id+'">'+escapeHtml(result.expire)+'</span>';
 						row.cells[6].onclick = function() { f_expire_cal(this, result.id); };
 						row.cells[6].className = 'command';
-						
+
 						xhttp[j] = null;
 					}
 				}
@@ -1095,7 +1095,7 @@ function f_expire_incmonth(val, del)
 	{
 		d = dpm(m, y);
 	}
-	
+
 	return pad(d, 2)+'.'+pad(m, 2)+'.'+pad(y, 4);
 }
 
@@ -1149,7 +1149,7 @@ var str_month = ['Fuck', 'January', 'February', 'March', 'April', 'May', 'June',
 					wrapperElement = null;
                       break;
                   }
-                
+
             }
         }
     };
@@ -1168,7 +1168,7 @@ var str_month = ['Fuck', 'January', 'February', 'March', 'April', 'May', 'June',
 		{
 			val = pad(dd.getDate(), 2)+'.'+pad(dd.getMonth()+1, 2)+'.'+pad(dd.getFullYear(), 4);
 		}
-		
+
         if(target.id === 'cmd1')
 		{
 			close = 1;
@@ -1232,7 +1232,7 @@ var str_month = ['Fuck', 'January', 'February', 'March', 'April', 'May', 'June',
 			close = 1;
 			f_expire(id, pad(parseInt(target.textContent, 10), 2)+'.'+pad(wrapperElement.calendar_data.month, 2)+'.'+pad(wrapperElement.calendar_data.year, 4));
 		}
-		
+
 		if(close)
 		{
 			wrapperElement.style.display = 'none';
@@ -1335,9 +1335,9 @@ function f_expire_cal(el, id)
 	row.appendChild(list);
 
 	f_calendar_display(div, wrapperElement.calendar_data.month, wrapperElement.calendar_data.year);
-	
+
 	div.style.display = 'block';
-	
+
 	document.addEventListener('click', documentClick, false);
 	div.addEventListener('mousedown', calendarClick, false);
 
@@ -1348,10 +1348,10 @@ function f_calendar_display(div, month, year)
 {
 	var table, tr, td, tbody, list;
 	var dim = dpm(month, year);
-	
+
 	var firstDay = new Date(year, month -1, 1).getDay();
 	if(firstDay == 0) firstDay = 7;
-	
+
 	table = document.createElement('table');
 	table.id = 'calendar_select';
 	tbody = document.createElement('thead');
@@ -1396,7 +1396,7 @@ function f_calendar_display(div, month, year)
 		td = document.createElement('td');
 		tr.appendChild(td);
 	}
-	
+
 	div.appendChild(table);
 }
 
@@ -1420,10 +1420,10 @@ function FileDrop(e, uid, id)
 
 	if (typeof files === 'undefined')
 		return;
-		
+
 	e.stopPropagation();
 	e.preventDefault();
-	
+
 	for(var i=0, n=files.length;i<n;i++)
 	{
 		f_upload(uid, id, files[i], k++, 0, 0);

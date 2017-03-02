@@ -17,14 +17,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-function delete_expired()
+function delete_expired($db)
 {
-	$res = db_select("SELECT m.`id` FROM `zxs_files` AS m WHERE (m.`deleted` = 0 AND m.`type` = 0 AND m.`expire` IS NOT NULL AND m.`expire` < CURDATE()) OR (m.`deleted` = 1 AND m.`type` = 3 AND m.`date` IS NOT NULL AND DATE_ADD(m.`date`, INTERVAL 3 DAY) < CURDATE())");
-	if($res !== FALSE) foreach($res as $row)
+	if($db->select("SELECT m.`id` FROM `zxs_files` AS m WHERE (m.`deleted` = 0 AND m.`type` = 0 AND m.`expire` IS NOT NULL AND m.`expire` < CURDATE()) OR (m.`deleted` = 1 AND m.`type` = 3 AND m.`date` IS NOT NULL AND DATE_ADD(m.`date`, INTERVAL 3 DAY) < CURDATE())"))
 	{
-		$query = rpv_v2("UPDATE `zxs_files` SET `type` = 0, `deleted` = 1 WHERE `id` = # LIMIT 1", array($row[0]));
-		db_put($query);
-		unlink(UPLOAD_DIR."/f".$row[0]);
+		foreach($db->data as $row)
+		{
+			$db->put(rpv("UPDATE `zxs_files` SET `type` = 0, `deleted` = 1 WHERE `id` = # LIMIT 1", $row[0]));
+			unlink(UPLOAD_DIR."/f".$row[0]);
+		}
 	}
 }
 
@@ -54,8 +55,8 @@ function delete_expired()
 		$ip = @$_SERVER['REMOTE_ADDR'];
 	}
 
-	include('inc.dbfunc.php');
-	include('inc.utils.php');
+	require_once('inc.db.php');
+	require_once('inc.utils.php');
 
 	$action = "";
 	if(isset($_GET['action']))
@@ -69,24 +70,23 @@ function delete_expired()
 		$id = $_GET['id'];
 	}
 
+	$db = new MySQLDB();
+	$db->connect();
+
 	if(empty($uid))
 	{
 		if(!empty(@$_COOKIE['zxsh']) && !empty(@$_COOKIE['zxsl']))
 		{
-			db_connect();
-			$query = rpv_v2("SELECT m.`id` FROM zxs_users AS m WHERE m.`login` = ! AND m.`sid` IS NOT NULL AND m.`sid` = ! AND m.`deleted` = 0 LIMIT 1", array($_COOKIE['zxsl'], $_COOKIE['zxsh']));
-			$res = db_select($query);
-			db_disconnect();
-			if($res !== FALSE)
+			if($db->select(rpv("SELECT m.`id` FROM zxs_users AS m WHERE m.`login` = ! AND m.`sid` IS NOT NULL AND m.`sid` = ! AND m.`deleted` = 0 LIMIT 1", $_COOKIE['zxsl'], $_COOKIE['zxsh'])))
 			{
-				$_SESSION['uid'] = $res[0][0];
+				$_SESSION['uid'] = $db->data[0][0];
 				$uid = $_SESSION['uid'];
 				setcookie("zxsh", @$_COOKIE['zxsh'], time()+2592000, '/');
 				setcookie("zxsl", @$_COOKIE['zxsl'], time()+2592000, '/');
 			}
 		}
 	}
-	
+
 	if(empty($uid))
 	{
 		switch($action)
@@ -99,32 +99,27 @@ function delete_expired()
 					include('templ/tpl.login.php');
 					exit;
 				}
-				db_connect();
-				delete_expired();
-				$query = rpv_v2("SELECT m.`id` FROM zxs_users AS m WHERE m.`login` = ! AND m.`passwd` = PASSWORD(!) AND m.`deleted` = 0 LIMIT 1", array(@$_POST['login'], @$_POST['passwd']));
-				$res = db_select($query);
-				if($res === FALSE)
+
+				delete_expired($db);
+
+				if(!$db->select(rpv("SELECT m.`id` FROM zxs_users AS m WHERE m.`login` = ! AND m.`passwd` = PASSWORD(!) AND m.`deleted` = 0 LIMIT 1", @$_POST['login'], @$_POST['passwd'])))
 				{
-					$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", array(0, LOG_LOGIN_FAILED, 0, $ip));
-					db_put($query);
-					db_disconnect();
+					$db->put(rpv("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", 0, LOG_LOGIN_FAILED, 0, $ip));
 					$error_msg = "Неверное имя пользователя или пароль!";
 					include('templ/tpl.login.php');
 					exit;
 				}
-				
-				$_SESSION['uid'] = $res[0][0];
+
+				$_SESSION['uid'] = $db->data[0][0];
 				$uid = $_SESSION['uid'];
-				
+
 				$sid = uniqid ();
 				setcookie("zxsh", $sid, time()+2592000, '/');
 				setcookie("zxsl", @$_POST['login'], time()+2592000, '/');
-				$query = rpv_v2("UPDATE zxs_users SET `sid` = ! WHERE `id` = # LIMIT 1", array($sid, $uid));
-				db_put($query);
 
-				$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", array($uid, LOG_LOGIN, 0, $ip));
-				db_put($query);
-				db_disconnect();
+				$db->put(rpv("UPDATE zxs_users SET `sid` = ! WHERE `id` = # LIMIT 1", $sid, $uid));
+				$db->put(rpv("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", $uid, LOG_LOGIN, 0, $ip));
+
 				header('Location: /');
 				exit;
 			}
@@ -141,21 +136,17 @@ function delete_expired()
 					include('templ/tpl.register.php');
 					exit;
 				}
-				db_connect();
-				$query = rpv_v2("SELECT m.`id` FROM zxs_users AS m WHERE m.`login`= ! OR m.`mail` = ! LIMIT 1", array(@$_POST['login'], @$_POST['mail']));
-				$res = db_select($query);
-				if($res !== FALSE)
+
+				if($db->select(rpv("SELECT m.`id` FROM zxs_users AS m WHERE m.`login`= ! OR m.`mail` = ! LIMIT 1", @$_POST['login'], @$_POST['mail'])))
 				{
-					db_disconnect();
+					$res = $db->data;
 					$error_msg = "Пользователь существует!";
 					include('templ/tpl.register.php');
 					exit;
 				}
-				$query = rpv_v2("INSERT INTO zxs_users (login, passwd, mail, deleted) VALUES (!, PASSWORD(!), !, 0)", array(@$_POST['login'], @$_POST['passwd'], @$_POST['mail']));
-				$res = db_put($query);
-				//mail();
-				db_disconnect();
-				
+				$db->put(rpv("INSERT INTO zxs_users (login, passwd, mail, deleted) VALUES (!, PASSWORD(!), !, 0)", @$_POST['login'], @$_POST['passwd'], @$_POST['mail']));
+				//mail(to admin for accept registration);
+
 				header("Location: $self");
 				exit;
 			}
@@ -167,12 +158,9 @@ function delete_expired()
 					include('templ/tpl.login.php');
 					exit;
 				}
-				db_connect();
-				$query = rpv_v2("UPDATE zxs_users SET `deleted` = 0 WHERE `login` = ! AND `id` = #", array(@$_GET['login'], $id));
-				$res = db_put($query);
-				$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", array(0, LOG_LOGIN_ACTIVATE, $id, $ip));
-				db_put($query);
-				db_disconnect();
+
+				$db->put(rpv("UPDATE zxs_users SET `deleted` = 0 WHERE `login` = ! AND `id` = #", @$_GET['login'], $id));
+				$db->put(rpv("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", 0, LOG_LOGIN_ACTIVATE, $id, $ip));
 			}
 		}
 		include('templ/tpl.login.php');
@@ -183,43 +171,34 @@ function delete_expired()
 	{
 		case 'download':
 		{
-			db_connect();
-			$query = rpv_v2("SELECT m.`name` FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`id` = # AND m.`type` = 0 AND m.`deleted` = 0 LIMIT 1", array($uid, $id));
-			$res = db_select($query);
-			db_disconnect();
-			if($res !== FALSE)
+			if($db->select(rpv("SELECT m.`name` FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`id` = # AND m.`type` = 0 AND m.`deleted` = 0 LIMIT 1", $uid, $id)))
 			{
+				$db->disconnect(); // release database connection
 				header("Content-Type: application/octet-stream");
 				header("Content-Length: ".filesize(UPLOAD_DIR."/f".$id));
-				header("Content-Disposition: attachment; filename=\"".rawurlencode($res[0][0])."\"; filename*=utf-8''".rawurlencode($res[0][0]));
+				header("Content-Disposition: attachment; filename=\"".rawurlencode($db->data[0][0])."\"; filename*=utf-8''".rawurlencode($db->data[0][0]));
 				readfile(UPLOAD_DIR."/f".$id);
 			}
 			exit;
 		}
 		case 'logoff':
 		{
-			db_connect();
-			$query = rpv_v2("UPDATE zxs_users SET `sid` = NULL WHERE `id` = # LIMIT 1", array($uid));
-			db_put($query);
-			db_disconnect();
+			$db->put(rpv("UPDATE zxs_users SET `sid` = NULL WHERE `id` = # LIMIT 1", $uid));
 			$_SESSION['uid'] = 0;
 			$uid = $_SESSION['uid'];
 			setcookie("zxsh", NULL, time()-60, '/');
 			setcookie("zxsl", NULL, time()-60, '/');
-			
+
 			include('templ/tpl.login.php');
 			exit;
 		}
 		case 'links':
 		{
-			db_connect();
 			//$query = rpv_v2("SELECT j1.`id`, j1.`pin`, j2.`id`, j2.`name`, j2.`size`, DATE_FORMAT(j2.`date`, '%d.%m.%Y'), DATE_FORMAT(j2.`expire`, '%d.%m.%Y'), j1.`desc` FROM `zxs_link_files` AS m LEFT JOIN zxs_links AS j1 ON j1.`id` = m.`lid` LEFT JOIN zxs_files AS j2 ON j2.`id` = m.`fid` WHERE m.`pid` = 0 AND j2.`uid` = # ORDER BY j2.`name`", array($uid));
-			$query = rpv_v2("SELECT m.`id`, m.`pin`, m.`desc`, DATE_FORMAT(m.`date`, '%d.%m.%Y'), DATE_FORMAT(m.`date`, '%d.%m.%Y %k:%i:%s') FROM `zxs_links` AS m WHERE m.`uid` = # AND m.`deleted` = 0 ORDER BY m.`id`", array($uid));
-			$res = db_select($query);
-			db_disconnect();
-			if($res === FALSE)
-			{
-			}
+
+			$db->select(rpv("SELECT m.`id`, m.`pin`, m.`desc`, DATE_FORMAT(m.`date`, '%d.%m.%Y'), DATE_FORMAT(m.`date`, '%d.%m.%Y %k:%i:%s') FROM `zxs_links` AS m WHERE m.`uid` = # AND m.`deleted` = 0 ORDER BY m.`id`", $uid));
+
+			$res = $db->data;
 			include('templ/tpl.links.php');
 			exit;
 		}
@@ -229,14 +208,9 @@ function delete_expired()
 			{
 				break;
 			}
-			
-			db_connect();
-			$query = "SELECT m.`id`, m.`pin`, m.`desc`, j1.`login`, DATE_FORMAT(m.`date`, '%d.%m.%Y'), DATE_FORMAT(m.`date`, '%d.%m.%Y %k:%i:%s') FROM `zxs_links` AS m LEFT JOIN zxs_users AS j1 ON j1.`id` = m.`uid` WHERE m.`deleted` = 0 ORDER BY m.`id` DESC";
-			$res = db_select($query);
-			db_disconnect();
-			if($res === FALSE)
-			{
-			}
+
+			$db->select("SELECT m.`id`, m.`pin`, m.`desc`, j1.`login`, DATE_FORMAT(m.`date`, '%d.%m.%Y'), DATE_FORMAT(m.`date`, '%d.%m.%Y %k:%i:%s') FROM `zxs_links` AS m LEFT JOIN zxs_users AS j1 ON j1.`id` = m.`uid` WHERE m.`deleted` = 0 ORDER BY m.`id` DESC");
+			$res = $db->data;
 			include('templ/tpl.all-links.php');
 			exit;
 		}
@@ -246,80 +220,60 @@ function delete_expired()
 			{
 				break;
 			}
-			
-			db_connect();
+
 			$uplevel = 0;
 			if($id)
-			{	
-				$query = rpv_v2("SELECT m.`pid` FROM `zxs_files` AS m WHERE m.`id` = # AND m.`deleted` = 0 LIMIT 1", array($id));
-				$res = db_select($query);
-				if($res !== FALSE)
+			{
+				if($db->select(rpv("SELECT m.`pid` FROM `zxs_files` AS m WHERE m.`id` = # AND m.`deleted` = 0 LIMIT 1", $id)))
 				{
-					$uplevel = $res[0][0];
+					$uplevel = $db->data[0][0];
 				}
 			}
-			
-			$query = rpv_v2("SELECT m.`id`, m.`name`, m.`size`, DATE_FORMAT(m.`date`, '%d.%m.%Y'), DATE_FORMAT(m.`expire`, '%d.%m.%Y'), m.`type`, m.`desc`, j1.`login`, DATE_FORMAT(m.`date`, '%d.%m.%Y %k:%i:%s'), (SELECT COUNT(*) FROM `zxs_log` AS c WHERE c.`type` = # AND c.`p1` = m.`id`) FROM `zxs_files` AS m LEFT JOIN `zxs_users` AS j1 ON j1.`id` = m.`uid` WHERE m.`pid` = # AND m.`deleted` = 0 ORDER BY m.`type` DESC, m.`name`", array(LOG_DOWNLOAD, $id));
-			$res = db_select($query);
-			db_disconnect();
-			if($res === FALSE)
-			{
-			}
+
+			$db->select(rpv("SELECT m.`id`, m.`name`, m.`size`, DATE_FORMAT(m.`date`, '%d.%m.%Y'), DATE_FORMAT(m.`expire`, '%d.%m.%Y'), m.`type`, m.`desc`, j1.`login`, DATE_FORMAT(m.`date`, '%d.%m.%Y %k:%i:%s'), (SELECT COUNT(*) FROM `zxs_log` AS c WHERE c.`type` = # AND c.`p1` = m.`id`) FROM `zxs_files` AS m LEFT JOIN `zxs_users` AS j1 ON j1.`id` = m.`uid` WHERE m.`pid` = # AND m.`deleted` = 0 ORDER BY m.`type` DESC, m.`name`", LOG_DOWNLOAD, $id));
+
+			$res = $db->data;
 			include('templ/tpl.all.php');
 			exit;
 		}
 		case 'stats':
 		{
-			db_connect();
-			$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", array($uid, LOG_VIEW_STATS, 0, $ip));
-			db_put($query);
-			$query = "SELECT m.`login`, COUNT(j1.`id`) AS `uploads` FROM zxs_users AS m LEFT JOIN zxs_files AS j1 ON j1.`uid` = m.`id` AND j1.`type` = 0 GROUP BY m.`id` ORDER BY `uploads` DESC";
-			$res = db_select($query);
-			db_disconnect();
-			if($res === FALSE)
-			{
-			}
+			$db->put(rpv("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", $uid, LOG_VIEW_STATS, 0, $ip));
+			$db->select("SELECT m.`login`, COUNT(j1.`id`) AS `uploads` FROM zxs_users AS m LEFT JOIN zxs_files AS j1 ON j1.`uid` = m.`id` AND j1.`type` = 0 GROUP BY m.`id` ORDER BY `uploads` DESC");
+
+			$res = $db->data;
 			include('templ/tpl.top-users.php');
 			exit;
 		}
 		case 'info':
 		{
-			db_connect();
-			$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", array($uid, LOG_VIEW_ABOUT, 0, $ip));
-			db_put($query);
-			db_disconnect();
+			$db->put(rpv("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", $uid, LOG_VIEW_ABOUT, 0, $ip));
+
 			include('templ/tpl.info.php');
 			exit;
 		}
 	}
 
-	db_connect();
 	$uplevel = 0;
 	$upname = 0;
 	if($id)
-	{	
-		$query = rpv_v2("SELECT m.`pid`, j1.`name` FROM `zxs_files` AS m LEFT JOIN `zxs_files` AS j1 ON j1.`id` = m.`id` WHERE m.`uid` = # AND m.`id` = # AND m.`deleted` = 0 LIMIT 1", array($uid, $id));
-		$res = db_select($query);
-		if($res !== FALSE)
+	{
+		if($db->select(rpv("SELECT m.`pid`, j1.`name` FROM `zxs_files` AS m LEFT JOIN `zxs_files` AS j1 ON j1.`id` = m.`id` WHERE m.`uid` = # AND m.`id` = # AND m.`deleted` = 0 LIMIT 1", $uid, $id)))
 		{
-			$uplevel = $res[0][0];
-			$upname = $res[0][1];
+			$uplevel = $db->data[0][0];
+			$upname = $db->data[0][1];
 		}
 	}
-	
-	$res = db_select("SELECT COUNT(*), SUM(m.`size`) FROM zxs_files m WHERE m.`type` = 0 AND m.`deleted` = 0");
-	if($res !== FALSE)
+
+	if($db->select("SELECT COUNT(*), SUM(m.`size`) FROM zxs_files m WHERE m.`type` = 0 AND m.`deleted` = 0"))
 	{
-		$files_on_server = $res[0][0];
-		$disk_usage = $res[0][1];
+		$files_on_server = $db->data[0][0];
+		$disk_usage = $db->data[0][1];
 	}
 	$free_space = disk_free_space(UPLOAD_DIR."/");
-	
-	$query = rpv_v2("SELECT m.`id`, m.`name`, m.`size`, DATE_FORMAT(m.`date`, '%d.%m.%Y'), DATE_FORMAT(m.`expire`, '%d.%m.%Y'), m.`type`, m.`desc`, DATE_FORMAT(m.`date`, '%d.%m.%Y %k:%i:%s'), (SELECT COUNT(*) FROM `zxs_log` AS c WHERE c.`type` = # AND c.`p1` = m.`id`) FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`pid` = # AND m.`deleted` = 0 ORDER BY m.`type` DESC, m.`name`, m.`id`", array(LOG_DOWNLOAD, $uid, $id));
-	$res = db_select($query);
-	db_disconnect();
-	if($res === FALSE)
-	{
-	}
+
+	$db->select(rpv("SELECT m.`id`, m.`name`, m.`size`, DATE_FORMAT(m.`date`, '%d.%m.%Y'), DATE_FORMAT(m.`expire`, '%d.%m.%Y'), m.`type`, m.`desc`, DATE_FORMAT(m.`date`, '%d.%m.%Y %k:%i:%s'), (SELECT COUNT(*) FROM `zxs_log` AS c WHERE c.`type` = # AND c.`p1` = m.`id`) FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`pid` = # AND m.`deleted` = 0 ORDER BY m.`type` DESC, m.`name`, m.`id`", LOG_DOWNLOAD, $uid, $id));
+	$res = $db->data;
+
 	include('templ/tpl.main.php');
 	//include('templ/tpl.debug.php');
