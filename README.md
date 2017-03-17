@@ -1,4 +1,4 @@
-#Simple web service for sharing file (like sendspace, rapidshare and etc.)
+# Simple web service for sharing file (like sendspace, rapidshare and etc.)
 
 ![screenshot](https://raw.githubusercontent.com/pfzim/other/master/Screenshot_3.png)
 
