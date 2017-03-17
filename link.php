@@ -17,31 +17,33 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-function update_link($lid)
+function update_link($db, $lid)
 {
-	$query = rpv_v2("DELETE FROM `zxs_link_files` WHERE `pid` <> 0 AND `lid` = #", array($lid));
-	db_put($query);
+	
+	$db->put(rpv("DELETE FROM `zxs_link_files` WHERE `pid` <> 0 AND `lid` = #", $lid));
 
-	$query = rpv_v2("SELECT m.`fid`, j1.`uid` FROM `zxs_link_files` AS m LEFT JOIN `zxs_links` AS j1 ON j1.`id` = m.`lid` LEFT JOIN `zxs_files` AS j2 ON j2.`id` = m.`fid` WHERE m.`lid` = # AND m.`pid` = 0 AND j2.`type` = 1 AND j1.`deleted` = 0 AND j2.`deleted` = 0", array($lid));
-	$res = db_select($query);
-	if($res !== FALSE) foreach($res as $row)
+	if($db->select(rpv("SELECT m.`fid`, j1.`uid` FROM `zxs_link_files` AS m LEFT JOIN `zxs_links` AS j1 ON j1.`id` = m.`lid` LEFT JOIN `zxs_files` AS j2 ON j2.`id` = m.`fid` WHERE m.`lid` = # AND m.`pid` = 0 AND j2.`type` = 1 AND j1.`deleted` = 0 AND j2.`deleted` = 0", $lid)))
 	{
-		share_subdir($row[1], $lid, $row[0]);
+		foreach($db->data as $row)
+		{
+			share_subdir($db, $row[1], $lid, $row[0]);
+		}
 	}
 }
 
-function share_subdir($uid, $lid, $id)
+function share_subdir($db, $uid, $lid, $id)
 {
-	$query = rpv_v2("SELECT m.`id`, m.`type` FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`pid` = # AND m.`deleted` = 0", array($uid, $id));
-	$res = db_select($query);
-	if($res !== FALSE) foreach($res as $row)
+	if($db->select(rpv("SELECT m.`id`, m.`type` FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`pid` = # AND m.`deleted` = 0", $uid, $id)))
 	{
-		$query = rpv_v2("INSERT INTO `zxs_link_files` (`lid`, `fid`, `pid`) VALUES (#, #, #)", array($lid, $row[0], $id));
-		db_put($query);
-
-		if($row[1])
+		foreach($db->data as $row)
 		{
-			share_subdir($uid, $lid, $row[0]);
+			
+			$db->put(rpv("INSERT INTO `zxs_link_files` (`lid`, `fid`, `pid`) VALUES (#, #, #)", $lid, $row[0], $id));
+
+			if($row[1])
+			{
+				share_subdir($db, $uid, $lid, $row[0]);
+			}
 		}
 	}
 }
@@ -102,20 +104,18 @@ function tar_header($name, $flag, $perm, $size, $date)
 	echo $last;
 }
 
-function tar_subdir($lid, $id, $path)
+function tar_subdir($db, $lid, $id, $path)
 {
 	global $ip;
 
-	$query = rpv_v2("SELECT j2.`id`, j2.`type`, j2.`name`, j2.`size`, j2.`date`, m.`pid` FROM `zxs_link_files` AS m LEFT JOIN `zxs_links` AS j1 ON j1.`id` = m.`lid` LEFT JOIN `zxs_files` AS j2 ON j2.`id` = m.`fid` WHERE m.`lid` = # AND m.`pid` = # AND j2.`deleted` = 0 AND j1.`deleted` = 0 ORDER BY j2.`type` DESC, j2.`name`", array($lid, $id));
-	$res = db_select($query);
-	if($res !== FALSE)
+	if($db->select(rpv("SELECT j2.`id`, j2.`type`, j2.`name`, j2.`size`, j2.`date`, m.`pid` FROM `zxs_link_files` AS m LEFT JOIN `zxs_links` AS j1 ON j1.`id` = m.`lid` LEFT JOIN `zxs_files` AS j2 ON j2.`id` = m.`fid` WHERE m.`lid` = # AND m.`pid` = # AND j2.`deleted` = 0 AND j1.`deleted` = 0 ORDER BY j2.`type` DESC, j2.`name`", $lid, $id)))
 	{
-		foreach($res as $row)
+		foreach($db->data as $row)
 		{
 			if(intval($row[1]) == 1)
 			{
 				tar_header($path.$row[2], '5', '0040777 ', 0, $row[4]);
-				tar_subdir($lid, $row[0], $path.$row[2].'/');
+				tar_subdir($db, $lid, $row[0], $path.$row[2].'/');
 			}
 			else
 			{
@@ -123,8 +123,7 @@ function tar_subdir($lid, $id, $path)
 				tar_header($path.$row[2], '0', '0100777 ', $fs, $row[4]);
 				readfile(UPLOAD_DIR."/f".$row[0]);
 				tar_fill($fs);
-				$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", array(0, LOG_DOWNLOAD, $row[0], $ip));
-				db_put($query);
+				$db->put(rpv("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", 0, LOG_DOWNLOAD, $row[0], $ip));
 			}
 		}
 	}
@@ -148,7 +147,7 @@ function tar_subdir($lid, $id, $path)
 	}
 	*/
 
-	if(!empty(@$_COOKIE['zxsp']))
+	if(!empty($_COOKIE['zxsp']))
 	{
 		$pin = $_COOKIE['zxsp'];
 	}
@@ -161,8 +160,8 @@ function tar_subdir($lid, $id, $path)
 		$ip = @$_SERVER['REMOTE_ADDR'];
 	}
 
-	include('inc.dbfunc.php');
-	include('inc.utils.php');
+	require_once('inc.db.php');
+	require_once('inc.utils.php');
 
 	$action = "";
 	if(isset($_GET['action']))
@@ -182,6 +181,9 @@ function tar_subdir($lid, $id, $path)
 		$fid = intval($_GET['fid']);
 	}
 
+	$db = new MySQLDB();
+	$db->connect();
+	
 	$mime = '';
 
 	switch($action)
@@ -192,20 +194,16 @@ function tar_subdir($lid, $id, $path)
 		{
 			if($fid && $id)
 			{
-				db_connect();
-				$query = rpv_v2("SELECT j1.`pin`, j2.`id`, j2.`name`, j2.`size` FROM `zxs_link_files` AS m LEFT JOIN `zxs_links` AS j1 ON j1.`id` = m.`lid` LEFT JOIN `zxs_files` AS j2 ON j2.`id` = m.`fid` WHERE m.`lid` = # AND m.`fid` = # AND j2.`type` = 0 AND j1.`deleted` = 0 AND j2.`deleted` = 0 LIMIT 1", array($id, $fid));
-				$res = db_select($query);
-				$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`, `desc`) VALUES (NOW(), #, #, #, !, !)", array(0, LOG_DOWNLOAD, $fid, $ip, @$_SERVER['HTTP_RANGE']));
-				db_put($query);
-				db_disconnect();
-				if($res !== FALSE)
+				$db->put(rpv("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`, `desc`) VALUES (NOW(), #, #, #, !, !)", 0, LOG_DOWNLOAD, $fid, $ip, @$_SERVER['HTTP_RANGE']));
+				
+				if($db->select(rpv("SELECT j1.`pin`, j2.`id`, j2.`name`, j2.`size` FROM `zxs_link_files` AS m LEFT JOIN `zxs_links` AS j1 ON j1.`id` = m.`lid` LEFT JOIN `zxs_files` AS j2 ON j2.`id` = m.`fid` WHERE m.`lid` = # AND m.`fid` = # AND j2.`type` = 0 AND j1.`deleted` = 0 AND j2.`deleted` = 0 LIMIT 1", $id, $fid)))
 				{
-					if(empty($res[0][0]) || (strcmp($res[0][0], $pin) == 0))
+					if(empty($db->data[0][0]) || (strcmp($db->data[0][0], $pin) == 0))
 					{
 						if(empty($mime))
 						{
 							$finfo = finfo_open(FILEINFO_MIME_TYPE);
-							$mime = finfo_file($finfo, UPLOAD_DIR.'/f'.$res[0][1]);
+							$mime = finfo_file($finfo, UPLOAD_DIR.'/f'.$db->data[0][1]);
 							finfo_close($finfo);
 
 							if($mime === FALSE)
@@ -214,8 +212,8 @@ function tar_subdir($lid, $id, $path)
 							}
 						}
 
-						$fs = filesize(UPLOAD_DIR.'/f'.$res[0][1]);
-						if($fs != intval($res[0][3]))
+						$fs = filesize(UPLOAD_DIR.'/f'.$db->data[0][1]);
+						if($fs != intval($db->data[0][3]))
 						{
 							$error_msg = 'File corrupted';
 							include('templ/tpl.error.php');
@@ -264,7 +262,7 @@ function tar_subdir($lid, $id, $path)
 							header('Content-Length: '.$pos_e - $pos_s + 1);
 							header('Content-Range: bytes '.$pos_s.'-'.$pos_e.'/'.$fs);
 							header('Content-Type: '.$mime);
-							$fh = fopen(UPLOAD_DIR."/f".$res[0][1], 'rb');
+							$fh = fopen(UPLOAD_DIR."/f".$db->data[0][1], 'rb');
 							if(fseek($fh, $pos_s, SEEK_SET) == 0)
 							{
 								while($pos_s <= $pos_e)
@@ -290,8 +288,8 @@ function tar_subdir($lid, $id, $path)
 							header('Content-Type: '.$mime);
 							header('Accept-Ranges: bytes');
 							header('Content-Length: '.$fs);
-							//header("Content-Disposition: attachment; filename=\"".rawurlencode($res[0][1])."\"; filename*=\"utf-8''".rawurlencode($res[0][2]));
-							readfile(UPLOAD_DIR.'/f'.$res[0][1]);
+							//header("Content-Disposition: attachment; filename=\"".rawurlencode($db->data[0][1])."\"; filename*=\"utf-8''".rawurlencode($db->data[0][2]));
+							readfile(UPLOAD_DIR.'/f'.$db->data[0][1]);
 						}
 						exit;
 					}
@@ -310,23 +308,21 @@ function tar_subdir($lid, $id, $path)
 		{
 			if($id)
 			{
-				db_connect();
-				$query = rpv_v2("SELECT m.`pin` FROM `zxs_links` AS m WHERE m.`id` = # AND m.`deleted` = 0 LIMIT 1", array($id));
-				$res = db_select($query);
-				$query = rpv_v2("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `p2`, `ip`) VALUES (NOW(), #, #, #, #, !)", array(0, LOG_TAR_CREATE, $id, $fid, $ip));
-				db_put($query);
-				if($res !== FALSE)
+				//db_connect();
+				
+				$db->put(rpv("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `p2`, `ip`) VALUES (NOW(), #, #, #, #, !)", 0, LOG_TAR_CREATE, $id, $fid, $ip));
+				if($db->select(rpv("SELECT m.`pin` FROM `zxs_links` AS m WHERE m.`id` = # AND m.`deleted` = 0 LIMIT 1", $id)))
 				{
-					if(empty($res[0][0]) || (strcmp($res[0][0], $pin) == 0))
+					if(empty($db->data[0][0]) || (strcmp($db->data[0][0], $pin) == 0))
 					{
 						header("Content-Type: application/octet-stream");
 						//header("Content-Disposition: attachment; filename=\"zxs-link-archive-".$id.".tar\";");
 
-						tar_subdir($id, $fid, '');
+						tar_subdir($db, $id, $fid, '');
 						echo pack("a1024", "");
 					}
 				}
-				db_disconnect();
+				//db_disconnect();
 			}
 			exit;
 		}
@@ -341,28 +337,24 @@ function tar_subdir($lid, $id, $path)
 		}
 	}
 
-	db_connect();
-	update_link($id);
+	//db_connect();
+	update_link($db, $id);
 	#$query = rpv_v2("SELECT j1.`pin`, j2.`id`, j2.`type`, j2.`name`, j2.`size`, j2.`date`, j2.`expire`, j2.`deleted` FROM `zxs_link_files` AS m LEFT JOIN `zxs_links` AS j1 ON j1.`id` = m.`lid` LEFT JOIN `zxs_files` AS j2 ON j2.`id` = m.`fid` WHERE m.`lid` = # AND m.`pid` = # AND j2.`type` = 0 AND j2.`deleted` = 0", array($id, $fid));
 	$uplevel = 0;
 	$upname = 'root';
 	if($fid)
 	{
-		$query = rpv_v2("SELECT m.`pid`, j1.`name` FROM `zxs_link_files` AS m LEFT JOIN `zxs_files` AS j1 ON j1.`id` = m.`fid` WHERE m.`lid` = # AND m.`fid` = # LIMIT 1", array($id, $fid));
-		$res = db_select($query);
-		if($res !== FALSE)
+		if($db->select(rpv("SELECT m.`pid`, j1.`name` FROM `zxs_link_files` AS m LEFT JOIN `zxs_files` AS j1 ON j1.`id` = m.`fid` WHERE m.`lid` = # AND m.`fid` = # LIMIT 1", $id, $fid)))
 		{
-			$uplevel = $res[0][0];
-			$upname = $res[0][1];
+			$uplevel = $db->data[0][0];
+			$upname = $db->data[0][1];
 		}
 	}
 
-	$query = rpv_v2("SELECT j1.`pin`, j2.`id`, j2.`type`, j2.`name`, j2.`size`, DATE_FORMAT(j2.`date`, '%d.%m.%Y'), DATE_FORMAT(j2.`expire`, '%d.%m.%Y'), j2.`deleted`, m.`pid`, j2.`desc` FROM `zxs_link_files` AS m LEFT JOIN `zxs_links` AS j1 ON j1.`id` = m.`lid` LEFT JOIN `zxs_files` AS j2 ON j2.`id` = m.`fid` WHERE m.`lid` = # AND m.`pid` = # AND j2.`deleted` = 0 AND j1.`deleted` = 0 ORDER BY j2.`type` DESC, j2.`name`", array($id, $fid));
-	$res = db_select($query);
-	db_disconnect();
-	if($res !== FALSE)
+	if($db->select(rpv("SELECT j1.`pin`, j2.`id`, j2.`type`, j2.`name`, j2.`size`, DATE_FORMAT(j2.`date`, '%d.%m.%Y'), DATE_FORMAT(j2.`expire`, '%d.%m.%Y'), j2.`deleted`, m.`pid`, j2.`desc` FROM `zxs_link_files` AS m LEFT JOIN `zxs_links` AS j1 ON j1.`id` = m.`lid` LEFT JOIN `zxs_files` AS j2 ON j2.`id` = m.`fid` WHERE m.`lid` = # AND m.`pid` = # AND j2.`deleted` = 0 AND j1.`deleted` = 0 ORDER BY j2.`type` DESC, j2.`name`", $id, $fid)))
 	{
-		if(empty($res[0][0]) || (strcmp($res[0][0], $pin) == 0))
+		$res = $db->data;
+		if(empty($db->data[0][0]) || (strcmp($db->data[0][0], $pin) == 0))
 		{
 			include('templ/tpl.link.php');
 			exit;

@@ -601,8 +601,8 @@ function json_escape($value) //json_escape
 
 function sql_escape($value)
 {
-    $escapers = array("\\", "\"", "\n", "\r", "\t", "\x08", "\x0c", "'", "\x1A", "\x00", "%", "_");
-    $replacements = array("\\\\", "\\\"", "\\n", "\\r", "\\t", "\\f", "\\b", "\\'", "\\Z", "\\0", "\%", "\_");
+    $escapers = array("\\", "\"", "\n", "\r", "\t", "\x08", "\x0c", "'", "\x1A", "\x00"); // "%", "_"
+    $replacements = array("\\\\", "\\\"", "\\n", "\\r", "\\t", "\\f", "\\b", "\\'", "\\Z", "\\0");
     $result = str_replace($escapers, $replacements, $value);
     return $result;
 }

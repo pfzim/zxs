@@ -808,7 +808,7 @@ function f_upload0(uid, id, file, k)
 
 	if(xhr)
 	{
-		xhr.open("POST", "/cgi-bin/upload", true);
+		xhr.open("POST", "/upload.php", true);
 		xhr.onreadystatechange =  function(j) {
 			return function(e) {
 			if(this.readyState == 4) {
@@ -907,7 +907,7 @@ function f_upload(uid, id, file, k, file_pos, fid)
 
 	if(xhr)
 	{
-		xhr.open("POST", "/cgi-bin/upload", true);
+		xhr.open("POST", "/upload.php", true);
 		xhr.onreadystatechange =  function(uidd, idd, f, j, fp) {
 			return function(e) {
 			if(this.readyState == 4) {

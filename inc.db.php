@@ -10,7 +10,7 @@ class MySQLDB
 	function __construct()
 	{
 		$link = NULL;
-		$data = NULL;
+		$data = FALSE;
 		$error_msg = "";
 	}
 
@@ -36,13 +36,13 @@ class MySQLDB
 
 	public function __destruct()
 	{
-		$this->data = NULL;
+		$this->data = FALSE;
 		$this->disconnect();
 	}
 
 	public function select($query)
 	{
-		$this->data = NULL;
+		$this->data = FALSE;
 
 		if(!$this->link)
 		{
@@ -98,7 +98,7 @@ class MySQLDB
 
 	public function disconnect()
 	{
-		//$this->data = NULL;
+		//$this->data = FALSE;
 		$this->error_msg = "";
 
 		if($this->link)

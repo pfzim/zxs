@@ -75,14 +75,14 @@ function delete_expired($db)
 
 	if(empty($uid))
 	{
-		if(!empty(@$_COOKIE['zxsh']) && !empty(@$_COOKIE['zxsl']))
+		if(!empty($_COOKIE['zxsh']) && !empty($_COOKIE['zxsl']))
 		{
 			if($db->select(rpv("SELECT m.`id` FROM zxs_users AS m WHERE m.`login` = ! AND m.`sid` IS NOT NULL AND m.`sid` = ! AND m.`deleted` = 0 LIMIT 1", $_COOKIE['zxsl'], $_COOKIE['zxsh'])))
 			{
 				$_SESSION['uid'] = $db->data[0][0];
 				$uid = $_SESSION['uid'];
-				setcookie("zxsh", @$_COOKIE['zxsh'], time()+2592000, '/');
-				setcookie("zxsl", @$_COOKIE['zxsl'], time()+2592000, '/');
+				setcookie("zxsh", $_COOKIE['zxsh'], time()+2592000, '/');
+				setcookie("zxsl", $_COOKIE['zxsl'], time()+2592000, '/');
 			}
 		}
 	}

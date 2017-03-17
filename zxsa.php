@@ -25,7 +25,7 @@ function update_link($db, $lid)
 	{
 		foreach($db->data as $row)
 		{
-			share_subdir($row[1], $lid, $row[0]);
+			share_subdir($db, $row[1], $lid, $row[0]);
 		}
 	}
 }
@@ -47,7 +47,6 @@ function share_subdir($db, $uid, $lid, $id)
 
 function delete_subdir($db, $uid, $id)
 {
-
 	if($db->select(rpv("SELECT m.`id`, m.`type` FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`pid` = # AND m.`deleted` = 0", $uid, $id)))
 	{
 		foreach($db->data as $row)
@@ -100,14 +99,14 @@ function delete_subdir($db, $uid, $id)
 
 	if(empty($uid))
 	{
-		if(!empty(@$_COOKIE['zxsh']) && !empty(@$_COOKIE['zxsl']))
+		if(!empty($_COOKIE['zxsh']) && !empty($_COOKIE['zxsl']))
 		{
 			if($db->select(rpv("SELECT m.`id` FROM zxs_users AS m WHERE m.`login` = ! AND m.`sid` IS NOT NULL AND m.`sid` = ! AND m.`deleted` = 0 LIMIT 1", $_COOKIE['zxsl'], $_COOKIE['zxsh'])))
 			{
 				$_SESSION['uid'] = $db->data[0][0];
 				$uid = $_SESSION['uid'];
-				setcookie("zxsh", @$_COOKIE['zxsh'], time()+2592000, '/');
-				setcookie("zxsl", @$_COOKIE['zxsl'], time()+2592000, '/');
+				setcookie("zxsh", $_COOKIE['zxsh'], time()+2592000, '/');
+				setcookie("zxsl", $_COOKIE['zxsl'], time()+2592000, '/');
 			}
 		}
 	}
@@ -152,7 +151,7 @@ function delete_subdir($db, $uid, $id)
 				}
 				else
 				{
-					delete_subdir($uid, $id);
+					delete_subdir($db, $uid, $id);
 				}
 			}
 
@@ -181,7 +180,7 @@ function delete_subdir($db, $uid, $id)
 					}
 					else
 					{
-						delete_subdir($uid, $id);
+						delete_subdir($db, $uid, $id);
 					}
 				}
 			}
@@ -394,7 +393,7 @@ function delete_subdir($db, $uid, $id)
 				$pid = $_GET['pid'];
 			}
 
-			update_link($id);
+			update_link($db, $id);
 			$list = '';
 
 			if($db->select(rpv("SELECT m.`fid`, j1.`name`, j1.`type`, j1.`size`, j1.`desc`, DATE_FORMAT(j1.`date`, '%d.%m.%Y'), DATE_FORMAT(j1.`expire`, '%d.%m.%Y') FROM zxs_link_files AS m LEFT JOIN zxs_files AS j1 ON j1.`id` = m.`fid` WHERE j1.`uid` = # AND m.`lid` = # AND m.`pid` = # AND j1.`deleted` = 0 ORDER BY j1.`type` DESC, j1.`name`", $uid, $id, $pid)))
