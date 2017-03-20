@@ -146,6 +146,43 @@ function delete_expired($db)
 				}
 				$db->put(rpv("INSERT INTO zxs_users (login, passwd, mail, deleted) VALUES (!, PASSWORD(!), !, 0)", @$_POST['login'], @$_POST['passwd'], @$_POST['mail']));
 				//mail(to admin for accept registration);
+				$uid = $db->last_id();
+
+				require_once 'libs/PHPMailer/PHPMailerAutoload.php';
+
+				$mail = new PHPMailer;
+
+				$mail->isSMTP();
+				$mail->Host = MAIL_HOST;
+				$mail->SMTPAuth = MAIL_AUTH;
+				if(MAIL_AUTH)
+				{
+					$mail->Username = MAIL_USER;
+					$mail->Password = MAIL_PASSWD;
+				}
+
+				$mail->SMTPSecure = MAIL_SECURE;
+				$mail->Port = MAIL_PORT;
+
+				$mail->setFrom(MAIL_FROM, 'MI Robot');
+				$mail->addAddress(MAIL_ADMIN, 'Admin');
+				//$mail->addReplyTo('helpdesk@example.com', 'Information');
+
+				$mail->isHTML(true);
+
+				$mail->Subject = 'Accept new registration';
+				$mail->Body    = 'Hello, Admin! New user wish to register. Accept registration:  <a href="'.$self.'?action=activate&amp;login='.@$_POST['login'].'&amp;id='.$uid.'">Accept</a>';
+				$mail->AltBody = 'Hello, Admin! New user wish to register. Accept registration: '.$self.'?action=activate&amp;login='.@$_POST['login'].'&amp;id='.$uid;
+
+				if(!$mail->send())
+				{
+					//echo 'Message could not be sent.';
+					//echo 'Mailer Error: ' . $mail->ErrorInfo;
+				}
+				else
+				{
+					//echo 'Message has been sent';
+				}				
 
 				header("Location: $self");
 				exit;

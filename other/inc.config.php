@@ -5,6 +5,16 @@
 	define("DB_HOST", "localhost");
 	define("DB_USER", "zxs");
 	define("DB_PASSWD", "your-password-here");
+
+	define("MAIL_HOST", "smtp.example.com");
+	define("MAIL_FROM", "admin@example.com");
+	define("MAIL_ADMIN", "admin@example.com");
+	define("MAIL_AUTH", true);
+	define("MAIL_USER", "admin@example.com");
+	define("MAIL_PASSWD", "smtp-password-here");
+	define("MAIL_SECURE", "tls");
+	define("MAIL_PORT", 587);
+
 	define("UPLOAD_DIR", "/var/www/box.example.com/upload");
 	define("ALLOW_MAILS", '^.+@.+$');
 
