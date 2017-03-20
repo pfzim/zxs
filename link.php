@@ -198,6 +198,7 @@ function tar_subdir($db, $lid, $id, $path)
 				
 				if($db->select(rpv("SELECT j1.`pin`, j2.`id`, j2.`name`, j2.`size` FROM `zxs_link_files` AS m LEFT JOIN `zxs_links` AS j1 ON j1.`id` = m.`lid` LEFT JOIN `zxs_files` AS j2 ON j2.`id` = m.`fid` WHERE m.`lid` = # AND m.`fid` = # AND j2.`type` = 0 AND j1.`deleted` = 0 AND j2.`deleted` = 0 LIMIT 1", $id, $fid)))
 				{
+					$db->disconnect(); // release database connection
 					if(empty($db->data[0][0]) || (strcmp($db->data[0][0], $pin) == 0))
 					{
 						if(empty($mime))
@@ -308,8 +309,6 @@ function tar_subdir($db, $lid, $id, $path)
 		{
 			if($id)
 			{
-				//db_connect();
-				
 				$db->put(rpv("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `p2`, `ip`) VALUES (NOW(), #, #, #, #, !)", 0, LOG_TAR_CREATE, $id, $fid, $ip));
 				if($db->select(rpv("SELECT m.`pin` FROM `zxs_links` AS m WHERE m.`id` = # AND m.`deleted` = 0 LIMIT 1", $id)))
 				{
@@ -322,7 +321,6 @@ function tar_subdir($db, $lid, $id, $path)
 						echo pack("a1024", "");
 					}
 				}
-				//db_disconnect();
 			}
 			exit;
 		}
