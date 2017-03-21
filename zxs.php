@@ -29,6 +29,37 @@ function delete_expired($db)
 	}
 }
 
+function php_mailer($to, $name, $subject, $html, $plain)
+{
+	require_once 'libs/PHPMailer/PHPMailerAutoload.php';
+
+	$mail = new PHPMailer;
+
+	$mail->isSMTP();
+	$mail->Host = MAIL_HOST;
+	$mail->SMTPAuth = MAIL_AUTH;
+	if(MAIL_AUTH)
+	{
+		$mail->Username = MAIL_USER;
+		$mail->Password = MAIL_PASSWD;
+	}
+
+	$mail->SMTPSecure = MAIL_SECURE;
+	$mail->Port = MAIL_PORT;
+
+	$mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
+	$mail->addAddress($to, $name);
+	//$mail->addReplyTo('helpdesk@example.com', 'Information');
+
+	$mail->isHTML(true);
+
+	$mail->Subject = $subject;
+	$mail->Body    = $html;
+	$mail->AltBody = $plain;
+
+	return $mail->send();
+}
+
 	session_name("ZXSID");
 	session_start();
 	error_reporting(E_ALL);
@@ -69,9 +100,30 @@ function delete_expired($db)
 	{
 		$id = $_GET['id'];
 	}
+	
+	if($action == "message")
+	{
+		switch($id)
+		{
+			case 1:
+				$error_msg = "Registration complete. Wait for activation account by administrator.";
+				break;
+			default:
+				$error_msg = "Unknown error";
+				break;
+		}
+		
+		include('templ/tpl.message.php');
+		exit;
+	}
 
 	$db = new MySQLDB();
-	$db->connect();
+	if(!$db->connect())
+	{
+		$error_msg = $db->get_last_error();
+		include('templ/tpl.error.php');
+		exit;
+	}
 
 	if(empty($uid))
 	{
@@ -113,7 +165,7 @@ function delete_expired($db)
 				$_SESSION['uid'] = $db->data[0][0];
 				$uid = $_SESSION['uid'];
 
-				$sid = uniqid ();
+				$sid = uniqid();
 				setcookie("zxsh", $sid, time()+2592000, '/');
 				setcookie("zxsl", @$_POST['login'], time()+2592000, '/');
 
@@ -123,12 +175,12 @@ function delete_expired($db)
 				header('Location: /');
 				exit;
 			}
-			case 'register':
+			case 'register': // show registartion form
 			{
 				include('templ/tpl.register.php');
 				exit;
 			}
-			case 'reg':
+			case 'reg': // register new account
 			{
 				if(empty($_POST['login']) || empty($_POST['passwd']) || empty($_POST['mail']) || !preg_match('/'.ALLOW_MAILS.'/i', $_POST['mail']))
 				{
@@ -144,63 +196,55 @@ function delete_expired($db)
 					include('templ/tpl.register.php');
 					exit;
 				}
-				$db->put(rpv("INSERT INTO zxs_users (login, passwd, mail, deleted) VALUES (!, PASSWORD(!), !, 0)", @$_POST['login'], @$_POST['passwd'], @$_POST['mail']));
-				//mail(to admin for accept registration);
+				$db->put(rpv("INSERT INTO zxs_users (login, passwd, mail, deleted) VALUES (!, PASSWORD(!), !, 1)", @$_POST['login'], @$_POST['passwd'], @$_POST['mail']));
 				$uid = $db->last_id();
 
-				require_once 'libs/PHPMailer/PHPMailerAutoload.php';
-
-				$mail = new PHPMailer;
-
-				$mail->isSMTP();
-				$mail->Host = MAIL_HOST;
-				$mail->SMTPAuth = MAIL_AUTH;
-				if(MAIL_AUTH)
+				// send mail to admin for accept registration
+				if(!php_mailer(
+					MAIL_ADMIN, MAIL_ADMIN_NAME,
+					'Accept new registration',
+					'Hello, Admin!<br /><br />New user wish to register.<br />Login: <b>'.@$_POST['login'].'</b><br />E-Mail: <b>'.@$_POST['mail'].'</b><br/><br/>Accept registration: <a href="'.$self.'?action=activate&amp;login='.@$_POST['login'].'&amp;id='.$uid.'">Accept</a>',
+					'Hello, Admin! New user wish to register. Accept registration: '.$self.'?action=activate&amp;login='.@$_POST['login'].'&amp;id='.$uid
+				))
 				{
-					$mail->Username = MAIL_USER;
-					$mail->Password = MAIL_PASSWD;
+					$error_msg = 'Mailer Error: ' . $mail->ErrorInfo;
+					include('templ/tpl.register.php');
+					exit;
 				}
 
-				$mail->SMTPSecure = MAIL_SECURE;
-				$mail->Port = MAIL_PORT;
-
-				$mail->setFrom(MAIL_FROM, 'MI Robot');
-				$mail->addAddress(MAIL_ADMIN, 'Admin');
-				//$mail->addReplyTo('helpdesk@example.com', 'Information');
-
-				$mail->isHTML(true);
-
-				$mail->Subject = 'Accept new registration';
-				$mail->Body    = 'Hello, Admin! New user wish to register. Accept registration:  <a href="'.$self.'?action=activate&amp;login='.@$_POST['login'].'&amp;id='.$uid.'">Accept</a>';
-				$mail->AltBody = 'Hello, Admin! New user wish to register. Accept registration: '.$self.'?action=activate&amp;login='.@$_POST['login'].'&amp;id='.$uid;
-
-				if(!$mail->send())
-				{
-					//echo 'Message could not be sent.';
-					//echo 'Mailer Error: ' . $mail->ErrorInfo;
-				}
-				else
-				{
-					//echo 'Message has been sent';
-				}				
-
-				header("Location: $self");
+				header("Location: $self?action=message&id=1");
 				exit;
 			}
-			case 'activate':
+			case 'activate': // activate account after registartion
 			{
 				if(empty($_GET['login']) || empty($id))
 				{
 					$error_msg = "Неверные данные активации!";
-					include('templ/tpl.login.php');
+					include('templ/tpl.error.php');
 					exit;
 				}
 
 				$db->put(rpv("UPDATE zxs_users SET `deleted` = 0 WHERE `login` = ! AND `id` = #", @$_GET['login'], $id));
 				$db->put(rpv("INSERT INTO `zxs_log` (`date`, `uid`, `type`, `p1`, `ip`) VALUES (NOW(), #, #, #, !)", 0, LOG_LOGIN_ACTIVATE, $id, $ip));
+
+				if($db->select(rpv("SELECT m.`id`, m.`mail` FROM zxs_users AS m WHERE m.`login`= ! AND m.`id` = # LIMIT 1", @$_GET['login'], $id)))
+				{
+					if(!php_mailer(
+						$db->data[0][1], @$_GET['login'],
+						'Registration accepted',
+						'Hello!<br /><br />You account activated.<br /><br/><a href="'.$self.'">Login</a>',
+						'Hello! You account activated.'
+					))
+					{
+						$error_msg = 'Mailer Error: ' . $mail->ErrorInfo;
+						include('templ/tpl.error.php');
+						exit;
+					}
+				}
 			}
 		}
-		include('templ/tpl.login.php');
+
+		include('templ/tpl.login.php'); // show login form
 		exit;
 	}
 

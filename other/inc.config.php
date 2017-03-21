@@ -8,7 +8,9 @@
 
 	define("MAIL_HOST", "smtp.example.com");
 	define("MAIL_FROM", "admin@example.com");
+	define("MAIL_FROM_NAME", "Robot");
 	define("MAIL_ADMIN", "admin@example.com");
+	define("MAIL_ADMIN_NAME", "Admin");
 	define("MAIL_AUTH", true);
 	define("MAIL_USER", "admin@example.com");
 	define("MAIL_PASSWD", "smtp-password-here");
