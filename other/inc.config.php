@@ -12,7 +12,7 @@
 	define("MAIL_ADMIN", "admin@example.com");
 	define("MAIL_ADMIN_NAME", "Admin");
 	define("MAIL_AUTH", true);
-	define("MAIL_USER", "admin@example.com");
+	define("MAIL_LOGIN", "admin@example.com");
 	define("MAIL_PASSWD", "smtp-password-here");
 	define("MAIL_SECURE", "tls");
 	define("MAIL_PORT", 587);

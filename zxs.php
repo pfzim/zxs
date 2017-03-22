@@ -40,7 +40,7 @@ function php_mailer($to, $name, $subject, $html, $plain)
 	$mail->SMTPAuth = MAIL_AUTH;
 	if(MAIL_AUTH)
 	{
-		$mail->Username = MAIL_USER;
+		$mail->Username = MAIL_LOGIN;
 		$mail->Password = MAIL_PASSWD;
 	}
 
@@ -106,7 +106,7 @@ function php_mailer($to, $name, $subject, $html, $plain)
 		switch($id)
 		{
 			case 1:
-				$error_msg = "Registration complete. Wait for activation account by administrator.";
+				$error_msg = "Registration is complete. Wait for the administrator to activate your account.";
 				break;
 			default:
 				$error_msg = "Unknown error";
