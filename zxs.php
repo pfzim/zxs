@@ -17,6 +17,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+if(!file_exists('inc.config.php'))
+{
+	header('Location: install.php');
+	exit;
+}
+
 function delete_expired($db)
 {
 	if($db->select("SELECT m.`id` FROM `zxs_files` AS m WHERE (m.`deleted` = 0 AND m.`type` = 0 AND m.`expire` IS NOT NULL AND m.`expire` < CURDATE()) OR (m.`deleted` = 1 AND m.`type` = 3 AND m.`date` IS NOT NULL AND DATE_ADD(m.`date`, INTERVAL 3 DAY) < CURDATE())"))
