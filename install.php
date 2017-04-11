@@ -494,9 +494,10 @@ EOT;
 			{
 				gi("result_"+id).textContent = 'Loading...';
 				gi("result_"+id).style.display = 'block';
+				var ms = gi("mail_secure");
 				f_post(id, "check_mail",
 					'mailhost='+encodeURIComponent(gi('mail_host').value)+'&mailport='+encodeURIComponent(gi('mail_port').value)+'&mailuser='+encodeURIComponent(gi('mail_user').value)+'&mailpwd='+encodeURIComponent(gi('mail_pwd').value)
-					+'&mailsecure='+encodeURIComponent(gi('mail_secure').value)+'&mailfrom='+encodeURIComponent(gi('mail_from').value)+'&mailfromname='+encodeURIComponent(gi('mail_from_name').value)
+					+'&mailsecure='+encodeURIComponent(ms.options[ms.selectedIndex].value)+'&mailfrom='+encodeURIComponent(gi('mail_from').value)+'&mailfromname='+encodeURIComponent(gi('mail_from_name').value)
 					+'&mailadmin='+encodeURIComponent(gi('mail_admin').value)+'&mailadminname='+encodeURIComponent(gi('mail_admin_name').value)
 				);
 			}
@@ -505,9 +506,10 @@ EOT;
 			{
 				gi("result_"+id).textContent = 'Loading...';
 				gi("result_"+id).style.display = 'block';
+				var ms = gi("mail_secure");
 				f_post(id, "save_config", 'host='+encodeURIComponent(gi('host').value)+'&db='+encodeURIComponent(gi('db_scheme').value)+'&dbuser='+encodeURIComponent(gi('db_user').value)+'&dbpwd='+encodeURIComponent(gi('db_pwd').value)
 					+'&mailhost='+encodeURIComponent(gi('mail_host').value)+'&mailport='+encodeURIComponent(gi('mail_port').value)+'&mailuser='+encodeURIComponent(gi('mail_user').value)+'&mailpwd='+encodeURIComponent(gi('mail_pwd').value)
-					+'&mailsecure='+encodeURIComponent(gi('mail_secure').value)+'&mailfrom='+encodeURIComponent(gi('mail_from').value)+'&mailfromname='+encodeURIComponent(gi('mail_from_name').value)
+					+'&mailsecure='+encodeURIComponent(ms.options[ms.selectedIndex].value)+'&mailfrom='+encodeURIComponent(gi('mail_from').value)+'&mailfromname='+encodeURIComponent(gi('mail_from_name').value)
 					+'&mailadmin='+encodeURIComponent(gi('mail_admin').value)+'&mailadminname='+encodeURIComponent(gi('mail_admin_name').value)
 					+'&uploaddir='+encodeURIComponent(gi('upload_dir').value)+'&allowmails='+encodeURIComponent(gi('allow_mails').value)
 				);
@@ -646,8 +648,7 @@ EOT;
 			<div class="form-group">
 				<label for="mail_secure" class="control-label col-sm-2">Secure:</label>
 				<div class="col-sm-5">
-					<input id="mail_secure" class="form-control" type="text" value="tls" />
-					<select id="mail_secure">
+					<select id="mail_secure" class="form-control">
 						<option value="" selected="selected">None</option>
 						<option value="tls">STARTLS</option>
 						<option value="ssl">SSL</option>
