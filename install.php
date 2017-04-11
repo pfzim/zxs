@@ -307,10 +307,10 @@ EOT;
 					}
 
 					$mail->SMTPSecure = @$_POST['mailsecure'];
-					$mail->Port = $_POST['mailport'];
+					$mail->Port = @$_POST['mailport'];
 
-					$mail->setFrom($_POST['mailfrom'], $_POST['mailfromname']);
-					$mail->addAddress($_POST['mailadmin'], $_POST['mailadminname']);
+					$mail->setFrom(@$_POST['mailfrom'], @$_POST['mailfromname']);
+					$mail->addAddress(@$_POST['mailadmin'], @$_POST['mailadminname']);
 					
 					$mail->isHTML(true);
 
@@ -647,6 +647,11 @@ EOT;
 				<label for="mail_secure" class="control-label col-sm-2">Secure:</label>
 				<div class="col-sm-5">
 					<input id="mail_secure" class="form-control" type="text" value="tls" />
+					<select id="mail_secure">
+						<option value="" selected="selected">None</option>
+						<option value="tls">STARTLS</option>
+						<option value="ssl">SSL</option>
+					</select>
 				</div>
 			</div>
 			<div class="form-group">
