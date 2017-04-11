@@ -4,7 +4,7 @@ require_once("inc.config.php");
 class MySQLDB
 {
 	private $link = NULL;
-	public $data = NULL;
+	public $data = FALSE;
 	private $error_msg = "";
 
 	function __construct()
@@ -38,6 +38,11 @@ class MySQLDB
 	{
 		$this->data = FALSE;
 		$this->disconnect();
+	}
+
+	public function select_db($db_name)
+	{
+		return mysqli_select_db($this->link, $db_name);
 	}
 
 	public function select($query)
