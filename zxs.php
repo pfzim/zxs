@@ -78,12 +78,6 @@ function php_mailer($to, $name, $subject, $html, $plain)
 	$disk_usage = 0;
 	$free_space = 0;
 
-	$uid = 0;
-	if(isset($_SESSION['uid']))
-	{
-		$uid = $_SESSION['uid'];
-	}
-
 	if(!empty($_SERVER['HTTP_CLIENT_IP'])) {
 		$ip = $_SERVER['HTTP_CLIENT_IP'];
 	} elseif(!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
@@ -129,6 +123,12 @@ function php_mailer($to, $name, $subject, $html, $plain)
 		$error_msg = $db->get_last_error();
 		include('templ/tpl.error.php');
 		exit;
+	}
+
+	$uid = 0;
+	if(isset($_SESSION['uid']))
+	{
+		$uid = $_SESSION['uid'];
 	}
 
 	if(empty($uid))
