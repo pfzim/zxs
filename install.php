@@ -228,6 +228,7 @@ $config = <<<'EOT'
 	define("LOG_TAR_CREATE", 5);		// p1 - link_id
 	define("LOG_LOGIN_ACTIVATE", 6);
 	define("LOG_VIEW_STATS", 7);
+
 EOT;
 
 
