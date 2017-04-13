@@ -119,6 +119,15 @@ function json_escape($value) //json_escape
     return $result;
 }
 
+function sql_escape($value)
+{
+    $escapers = array("\\", "\"", "\n", "\r", "\t", "\x08", "\x0c", "'", "\x1A", "\x00"); // "%", "_"
+    $replacements = array("\\\\", "\\\"", "\\n", "\\r", "\\t", "\\f", "\\b", "\\'", "\\Z", "\\0");
+    $result = str_replace($escapers, $replacements, $value);
+    return $result;
+}
+
+
 $sql = array(
 <<<'EOT'
 CREATE DATABASE `#DB_NAME#` DEFAULT CHARACTER SET 'utf8'
@@ -240,7 +249,7 @@ EOT;
 
 					$db = new MySQLDB();
 					$db->connect(@$_POST['host'], @$_POST['user'], @$_POST['pwd']);
-					echo '{"result": 0, "status": "OK"}';
+					echo '{"code": 0, "status": "OK"}';
 				}
 				exit;
 				case 'create_db':
@@ -253,13 +262,13 @@ EOT;
 					$db->connect(@$_POST['host'], @$_POST['user'], @$_POST['pwd']);
 					foreach($sql as $query)
 					{
-						$db->put(str_replace('#DB_NAME#', @$_POST['db'], $query));
+						$db->put(str_replace('#DB_NAME#', sql_escape(@$_POST['db']), $query));
 					}
 					//$db->put('CREATE DATABASE `'.@$_POST['db'].'` DEFAULT CHARACTER SET utf8');
 					//$db->select_db(@$_POST['db']);
 					//$db->put($db_table);
 
-					echo '{"result": 0, "status": "OK"}';
+					echo '{"code": 0, "status": "OK"}';
 				}
 				exit;
 				case 'create_db_user':
@@ -270,9 +279,9 @@ EOT;
 
 					$db = new MySQLDB();
 					$db->connect(@$_POST['host'], @$_POST['user'], @$_POST['pwd']);
-					$db->put("CREATE USER '".@$_POST['dbuser']."'@'%' IDENTIFIED BY '".@$_POST['dbpwd']."'");
+					$db->put("CREATE USER '".sql_escape(@$_POST['dbuser'])."'@'%' IDENTIFIED BY '".sql_escape(@$_POST['dbpwd'])."'");
 
-					echo '{"result": 0, "status": "OK"}';
+					echo '{"code": 0, "status": "OK"}';
 				}
 				exit;
 				case 'grant_access':
@@ -285,10 +294,10 @@ EOT;
 					$db = new MySQLDB();
 					$db->connect(@$_POST['host'], @$_POST['user'], @$_POST['pwd']);
 					//$db->put("GRANT USAGE ON mysql.* TO '".@$_POST['dbuser']."'@'%'");
-					$db->put("GRANT ALL PRIVILEGES ON ".@$_POST['db'].".* TO '".@$_POST['dbuser']."'@'%'");
+					$db->put("GRANT ALL PRIVILEGES ON ".sql_escape(@$_POST['db']).".* TO '".sql_escape(@$_POST['dbuser'])."'@'%'");
 					$db->put("FLUSH PRIVILEGES");
 
-					echo '{"result": 0, "status": "OK"}';
+					echo '{"code": 0, "status": "OK"}';
 				}
 				exit;
 				case 'check_mail':
@@ -321,13 +330,13 @@ EOT;
 					
 					$mail->isHTML(true);
 
-					$mail->Subject = 'TEST';
-					$mail->Body    = 'TEST';
-					$mail->AltBody = 'TEST';
+					$mail->Subject = 'Test message';
+					$mail->Body    = 'This is a test message';
+					$mail->AltBody = 'This is a test message';
 
 					if($mail->send())
 					{
-						echo '{"result": 0, "status": "OK"}';
+						echo '{"code": 0, "status": "OK"}';
 					}
 					
 					throw new Exception("FAILED");
@@ -343,9 +352,9 @@ EOT;
 
 					$db = new MySQLDB();
 					$db->connect(@$_POST['host'], @$_POST['dbuser'], @$_POST['dbpwd'], @$_POST['db']);
-					$db->put("INSERT INTO zxs_users (login, passwd, mail, deleted) VALUES ('".@$_POST['adminuser']."', PASSWORD('".@$_POST['adminpwd']."'), '".@$_POST['mailadmin']."', 0)");
+					$db->put("INSERT INTO zxs_users (login, passwd, mail, deleted) VALUES ('".sql_escape(@$_POST['adminuser'])."', PASSWORD('".sql_escape(@$_POST['adminpwd'])."'), '".sql_escape(@$_POST['mailadmin'])."', 0)");
 
-					echo '{"result": 0, "status": "OK"}';
+					echo '{"code": 0, "status": "OK"}';
 				}
 				exit;
 				case 'save_config':
@@ -366,7 +375,7 @@ EOT;
 
 					$config = str_replace(
 						array('#host#', '#login#', '#password#', '#db#', '#mail_host#', '#mail_port#', '#mail_user#', '#mail_password#', '#mail_secure#', '#mail_admin#', '#mail_admin_name#', '#mail_from#', '#mail_from_name#', '#upload_dir#', '#allow_mails#', '#mail_auth#'),
-						array(@$_POST['host'], @$_POST['dbuser'], @$_POST['dbpwd'], @$_POST['db'], @$_POST['mailhost'], @$_POST['mailport'], @$_POST['mailuser'], @$_POST['mailpwd'], @$_POST['mailsecure'], @$_POST['mailadmin'], @$_POST['mailadminname'], @$_POST['mailfrom'], @$_POST['mailfromname'], @$_POST['uploaddir'], @$_POST['allowmails'], empty(@$_POST['mailuser'])?'false':'true'),
+						array(sql_escape(@$_POST['host']), sql_escape(@$_POST['dbuser']), sql_escape(@$_POST['dbpwd']), sql_escape(@$_POST['db']), sql_escape(@$_POST['mailhost']), sql_escape(@$_POST['mailport']), sql_escape(@$_POST['mailuser']), sql_escape(@$_POST['mailpwd']), sql_escape(@$_POST['mailsecure']), sql_escape(@$_POST['mailadmin']), sql_escape(@$_POST['mailadminname']), sql_escape(@$_POST['mailfrom']), sql_escape(@$_POST['mailfromname']), sql_escape(@$_POST['uploaddir']), sql_escape(@$_POST['allowmails']), empty(@$_POST['mailuser'])?'false':'true'),
 						$config
 					);
 
@@ -375,7 +384,7 @@ EOT;
 						throw new Exception("Save config error");
 					}
 
-					echo '{"result": 0, "status": "OK"}';
+					echo '{"code": 0, "status": "OK"}';
 				}
 				exit;
 				case 'remove_self':
@@ -384,14 +393,14 @@ EOT;
 					{
 						throw new Exception("FAILED");
 					}
-					echo '{"result": 0, "status": "OK"}';
+					echo '{"code": 0, "status": "OK"}';
 				}
 				exit;
 			}
 		}
 		catch(Exception $e)
 		{
-			echo '{"result": 1, "status": "'.json_escape($e->getMessage()).'"}';
+			echo '{"code": 1, "status": "'.json_escape($e->getMessage()).'"}';
 			exit;
 		}
 	}
@@ -457,7 +466,7 @@ EOT;
 							if(this.status == 200)
 							{
 								var result = JSON.parse(this.responseText);
-								if(result.result)
+								if(result.code)
 								{
 									gi("result_"+id).classList.remove('alert-success');
 									gi("result_"+id).classList.add('alert-danger');
