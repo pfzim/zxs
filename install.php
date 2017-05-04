@@ -3,7 +3,7 @@
 if(file_exists('inc.config.php'))
 {
 	header("Content-Type: text/plain; charset=utf-8");
-	echo 'Configuration file exist. Remove inc.config.php before running installation';
+	echo 'Configuration file already exist. Remove inc.config.php before running installation';
 	exit;
 }
 
@@ -130,10 +130,6 @@ function sql_escape($value)
 
 $sql = array(
 <<<'EOT'
-CREATE DATABASE `#DB_NAME#` DEFAULT CHARACTER SET 'utf8'
-EOT
-,
-<<<'EOT'
 CREATE TABLE `#DB_NAME#`.`zxs_files` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `uid` int(10) unsigned NOT NULL,
@@ -232,7 +228,7 @@ $config = <<<'EOT'
 EOT;
 
 
-	error_reporting(0);
+	//error_reporting(0);
 
 	if(isset($_GET['action']))
 	{
@@ -254,6 +250,19 @@ EOT;
 				}
 				exit;
 				case 'create_db':
+				{
+					if(empty($_POST['host'])) throw new Exception('Host value not defined!');
+					if(empty($_POST['user'])) throw new Exception('Login value not defined!');
+					if(empty($_POST['db'])) throw new Exception('DB value not defined!');
+
+					$db = new MySQLDB();
+					$db->connect(@$_POST['host'], @$_POST['user'], @$_POST['pwd']);
+					$db->put('CREATE DATABASE `'.@$_POST['db'].'` DEFAULT CHARACTER SET utf8');
+
+					echo '{"code": 0, "status": "OK"}';
+				}
+				exit;
+				case 'create_tables':
 				{
 					if(empty($_POST['host'])) throw new Exception('Host value not defined!');
 					if(empty($_POST['user'])) throw new Exception('Login value not defined!');
@@ -415,7 +424,300 @@ EOT;
 		<meta charset="utf-8">
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link type="text/css" href="templ/bootstrap.min.css" rel="stylesheet" />
+		<style type="text/css">
+			html {
+				font-family: sans-serif;
+				-webkit-text-size-adjust: 100%;
+				-ms-text-size-adjust: 100%
+			}
+			body {
+				margin: 0
+			}
+			button,
+			input,
+			select {
+				margin: 0;
+				font: inherit;
+				color: inherit
+			}
+			button {
+				overflow: visible
+			}
+			button,
+			select {
+				text-transform: none
+			}
+			button {
+				-webkit-appearance: button;
+				cursor: pointer
+			}
+			button::-moz-focus-inner,
+			input::-moz-focus-inner {
+				padding: 0;
+				border: 0
+			}
+			input {
+				line-height: normal
+			}
+
+			@media print {
+				*,
+				:after,
+				:before {
+					color: #000!important;
+					text-shadow: none!important;
+					background: 0 0!important;
+					-webkit-box-shadow: none!important;
+					box-shadow: none!important
+				}
+				h3 {
+					orphans: 3;
+					widows: 3
+				}
+				h3 {
+					page-break-after: avoid
+				}
+			}
+			@font-face {
+				font-family: 'Glyphicons Halflings';
+				src: url(../fonts/glyphicons-halflings-regular.eot);
+				src: url(../fonts/glyphicons-halflings-regular.eot?#iefix) format('embedded-opentype'), url(../fonts/glyphicons-halflings-regular.woff2) format('woff2'), url(../fonts/glyphicons-halflings-regular.woff) format('woff'), url(../fonts/glyphicons-halflings-regular.ttf) format('truetype'), url(../fonts/glyphicons-halflings-regular.svg#glyphicons_halflingsregular) format('svg')
+			}
+			* {
+				-webkit-box-sizing: border-box;
+				-moz-box-sizing: border-box;
+				box-sizing: border-box
+			}
+			:after,
+			:before {
+				-webkit-box-sizing: border-box;
+				-moz-box-sizing: border-box;
+				box-sizing: border-box
+			}
+			html {
+				font-size: 10px;
+				-webkit-tap-highlight-color: rgba(0, 0, 0, 0)
+			}
+			body {
+				font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+				font-size: 14px;
+				line-height: 1.42857143;
+				color: #333;
+				background-color: #fff
+			}
+			button,
+			input,
+			select {
+				font-family: inherit;
+				font-size: inherit;
+				line-height: inherit
+			}
+			h3 {
+				font-family: inherit;
+				font-weight: 500;
+				line-height: 1.1;
+				color: inherit
+			}
+			h3 {
+				margin-top: 20px;
+				margin-bottom: 10px
+			}
+			h3 {
+				font-size: 24px
+			}
+			.container {
+				padding-right: 15px;
+				padding-left: 15px;
+				margin-right: auto;
+				margin-left: auto
+			}
+			@media (min-width: 768px) {
+				.container {
+					width: 750px
+				}
+			}
+			@media (min-width: 992px) {
+				.container {
+					width: 970px
+				}
+			}
+			@media (min-width: 1200px) {
+				.container {
+					width: 1170px
+				}
+			}
+			.col-sm-2,
+			.col-sm-5 {
+				position: relative;
+				min-height: 1px;
+				padding-right: 15px;
+				padding-left: 15px
+			}
+			@media (min-width: 768px) {
+				.col-sm-2,
+				.col-sm-5 {
+					float: left
+				}
+				.col-sm-5 {
+					width: 41.66666667%
+				}
+				.col-sm-2 {
+					width: 16.66666667%
+				}
+				.col-sm-offset-2 {
+					margin-left: 16.66666667%
+				}
+			}
+			label {
+				display: inline-block;
+				max-width: 100%;
+				margin-bottom: 5px;
+				font-weight: 700
+			}
+			.form-control {
+				display: block;
+				width: 100%;
+				height: 34px;
+				padding: 6px 12px;
+				font-size: 14px;
+				line-height: 1.42857143;
+				color: #555;
+				background-color: #fff;
+				background-image: none;
+				border: 1px solid #ccc;
+				border-radius: 4px;
+				-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+				box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+				-webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+				-o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+				transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s
+			}
+			.form-control:focus {
+				border-color: #66afe9;
+				outline: 0;
+				-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6);
+				box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6)
+			}
+			.form-control::-moz-placeholder {
+				color: #999;
+				opacity: 1
+			}
+			.form-control:-ms-input-placeholder {
+				color: #999
+			}
+			.form-control::-webkit-input-placeholder {
+				color: #999
+			}
+			.form-control::-ms-expand {
+				background-color: transparent;
+				border: 0
+			}
+			.form-group {
+				margin-bottom: 15px
+			}
+			.form-horizontal .form-group {
+				margin-right: -15px;
+				margin-left: -15px
+			}
+			@media (min-width: 768px) {
+				.form-horizontal .control-label {
+					padding-top: 7px;
+					margin-bottom: 0;
+					text-align: right
+				}
+			}
+			.btn {
+				display: inline-block;
+				padding: 6px 12px;
+				margin-bottom: 0;
+				font-size: 14px;
+				font-weight: 400;
+				line-height: 1.42857143;
+				text-align: center;
+				white-space: nowrap;
+				vertical-align: middle;
+				-ms-touch-action: manipulation;
+				touch-action: manipulation;
+				cursor: pointer;
+				-webkit-user-select: none;
+				-moz-user-select: none;
+				-ms-user-select: none;
+				user-select: none;
+				background-image: none;
+				border: 1px solid transparent;
+				border-radius: 4px
+			}
+			.btn:active:focus,
+			.btn:focus {
+				outline: 5px auto -webkit-focus-ring-color;
+				outline-offset: -2px
+			}
+			.btn:focus,
+			.btn:hover {
+				color: #333;
+				text-decoration: none
+			}
+			.btn:active {
+				background-image: none;
+				outline: 0;
+				-webkit-box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
+				box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125)
+			}
+			.btn-primary {
+				color: #fff;
+				background-color: #337ab7;
+				border-color: #2e6da4
+			}
+			.btn-primary:focus {
+				color: #fff;
+				background-color: #286090;
+				border-color: #122b40
+			}
+			.btn-primary:hover {
+				color: #fff;
+				background-color: #286090;
+				border-color: #204d74
+			}
+			.btn-primary:active {
+				color: #fff;
+				background-color: #286090;
+				border-color: #204d74
+			}
+			.btn-primary:active:focus,
+			.btn-primary:active:hover {
+				color: #fff;
+				background-color: #204d74;
+				border-color: #122b40
+			}
+			.btn-primary:active {
+				background-image: none
+			}
+			.alert {
+				padding: 15px;
+				margin-bottom: 20px;
+				border: 1px solid transparent;
+				border-radius: 4px
+			}
+			.alert-danger {
+				color: #a94442;
+				background-color: #f2dede;
+				border-color: #ebccd1
+			}
+			.container:after,
+			.container:before,
+			.form-horizontal .form-group:after,
+			.form-horizontal .form-group:before {
+				display: table;
+				content: " "
+			}
+			.container:after,
+			.form-horizontal .form-group:after {
+				clear: both
+			}
+			@-ms-viewport {
+				width: device-width
+			}
+		</style>
 		<script type="text/javascript">
 			function gi(name)
 			{
@@ -464,21 +766,34 @@ EOT;
 					xhr.open("post", "install.php?action="+action, true);
 					xhr.onreadystatechange = function(e) {
 						if(this.readyState == 4) {
+							var result;
 							if(this.status == 200)
 							{
-								var result = JSON.parse(this.responseText);
-								if(result.code)
+								try
 								{
-									gi("result_"+id).classList.remove('alert-success');
-									gi("result_"+id).classList.add('alert-danger');
+									result = JSON.parse(this.responseText);
 								}
-								else
+								catch(e)
 								{
-									gi("result_"+id).classList.remove('alert-danger');
-									gi("result_"+id).classList.add('alert-success');
+									result = {code: 1, status: "Response: "+this.responseText};
 								}
-								gi("result_"+id).textContent = result.status;
 							}
+							else
+							{
+								result = {code: 1, status: "AJAX error code: "+this.status};
+							}
+							
+							if(result.code)
+							{
+								gi("result_"+id).classList.remove('alert-success');
+								gi("result_"+id).classList.add('alert-danger');
+							}
+							else
+							{
+								gi("result_"+id).classList.remove('alert-danger');
+								gi("result_"+id).classList.add('alert-success');
+							}
+							gi("result_"+id).textContent = result.status;
 						}
 					};
 					xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -493,31 +808,49 @@ EOT;
 			{
 				gi("result_"+id).textContent = 'Loading...';
 				gi("result_"+id).style.display = 'block';
-				f_post(id, 'check_db', 'host='+encodeURIComponent(gi('host').value)+'&user='+encodeURIComponent(gi('user_root').value)+'&pwd='+encodeURIComponent(gi('pwd_root').value));
+				f_post(id, 'check_db',
+					'host='+encodeURIComponent(gi('host').value)+'&user='+encodeURIComponent(gi('user_root').value)+'&pwd='+encodeURIComponent(gi('pwd_root').value)
+				);
 			}
 
 			function f_create_db(id)
 			{
 				gi("result_"+id).textContent = 'Loading...';
 				gi("result_"+id).style.display = 'block';
-				f_post(id, 'create_db', 'host='+encodeURIComponent(gi('host').value)+'&user='+encodeURIComponent(gi('user_root').value)+'&pwd='+encodeURIComponent(gi('pwd_root').value)
-					+'&db='+encodeURIComponent(gi('db_scheme').value));
+				f_post(id, 'create_db',
+					'host='+encodeURIComponent(gi('host').value)+'&user='+encodeURIComponent(gi('user_root').value)+'&pwd='+encodeURIComponent(gi('pwd_root').value)
+					+'&db='+encodeURIComponent(gi('db_scheme').value)
+				);
+			}
+
+			function f_create_tables(id)
+			{
+				gi("result_"+id).textContent = 'Loading...';
+				gi("result_"+id).style.display = 'block';
+				f_post(id, 'create_tables',
+					'host='+encodeURIComponent(gi('host').value)+'&user='+encodeURIComponent(gi('user_root').value)+'&pwd='+encodeURIComponent(gi('pwd_root').value)
+					+'&db='+encodeURIComponent(gi('db_scheme').value)
+				);
 			}
 
 			function f_create_db_user(id)
 			{
 				gi("result_"+id).textContent = 'Loading...';
 				gi("result_"+id).style.display = 'block';
-				f_post(id, 'create_db_user', 'host='+encodeURIComponent(gi('host').value)+'&user='+encodeURIComponent(gi('user_root').value)+'&pwd='+encodeURIComponent(gi('pwd_root').value)
-					+'&dbuser='+encodeURIComponent(gi('db_user').value)+'&dbpwd='+encodeURIComponent(gi('db_pwd').value));
+				f_post(id, 'create_db_user',
+					'host='+encodeURIComponent(gi('host').value)+'&user='+encodeURIComponent(gi('user_root').value)+'&pwd='+encodeURIComponent(gi('pwd_root').value)
+					+'&dbuser='+encodeURIComponent(gi('db_user').value)+'&dbpwd='+encodeURIComponent(gi('db_pwd').value)
+				);
 			}
 
 			function f_grant_access(id)
 			{
 				gi("result_"+id).textContent = 'Loading...';
 				gi("result_"+id).style.display = 'block';
-				f_post(id, 'grant_access', 'host='+encodeURIComponent(gi('host').value)+'&user='+encodeURIComponent(gi('user_root').value)+'&pwd='+encodeURIComponent(gi('pwd_root').value)
-					+'&db='+encodeURIComponent(gi('db_scheme').value)+'&dbuser='+encodeURIComponent(gi('db_user').value)+'&dbpwd='+encodeURIComponent(gi('db_pwd').value));
+				f_post(id, 'grant_access',
+					'host='+encodeURIComponent(gi('host').value)+'&user='+encodeURIComponent(gi('user_root').value)+'&pwd='+encodeURIComponent(gi('pwd_root').value)
+					+'&db='+encodeURIComponent(gi('db_scheme').value)+'&dbuser='+encodeURIComponent(gi('db_user').value)+'&dbpwd='+encodeURIComponent(gi('db_pwd').value)
+				);
 			}
 
 			function f_check_mail(id)
@@ -536,7 +869,8 @@ EOT;
 			{
 				gi("result_"+id).textContent = 'Loading...';
 				gi("result_"+id).style.display = 'block';
-				f_post(id, 'add_user', 'host='+encodeURIComponent(gi('host').value)+'&dbuser='+encodeURIComponent(gi('db_user').value)+'&dbpwd='+encodeURIComponent(gi('db_pwd').value)
+				f_post(id, 'add_user',
+					'host='+encodeURIComponent(gi('host').value)+'&dbuser='+encodeURIComponent(gi('db_user').value)+'&dbpwd='+encodeURIComponent(gi('db_pwd').value)
 					+'&db='+encodeURIComponent(gi('db_scheme').value)+'&adminuser='+encodeURIComponent(gi('admin_user').value)+'&adminpwd='+encodeURIComponent(gi('admin_pwd').value)
 					+'&mailadmin='+encodeURIComponent(gi('mail_admin').value)
 				);
@@ -547,7 +881,8 @@ EOT;
 				gi("result_"+id).textContent = 'Loading...';
 				gi("result_"+id).style.display = 'block';
 				var ms = gi("mail_secure");
-				f_post(id, "save_config", 'host='+encodeURIComponent(gi('host').value)+'&db='+encodeURIComponent(gi('db_scheme').value)+'&dbuser='+encodeURIComponent(gi('db_user').value)+'&dbpwd='+encodeURIComponent(gi('db_pwd').value)
+				f_post(id, "save_config",
+					'host='+encodeURIComponent(gi('host').value)+'&db='+encodeURIComponent(gi('db_scheme').value)+'&dbuser='+encodeURIComponent(gi('db_user').value)+'&dbpwd='+encodeURIComponent(gi('db_pwd').value)
 					+'&mailhost='+encodeURIComponent(gi('mail_host').value)+'&mailport='+encodeURIComponent(gi('mail_port').value)+'&mailuser='+encodeURIComponent(gi('mail_user').value)+'&mailpwd='+encodeURIComponent(gi('mail_pwd').value)
 					+'&mailsecure='+encodeURIComponent(ms.options[ms.selectedIndex].value)+'&mailfrom='+encodeURIComponent(gi('mail_from').value)+'&mailfromname='+encodeURIComponent(gi('mail_from_name').value)
 					+'&mailadmin='+encodeURIComponent(gi('mail_admin').value)+'&mailadminname='+encodeURIComponent(gi('mail_admin_name').value)
@@ -602,12 +937,17 @@ EOT;
 			</div>
 			<div class="form-group">
 				<div class="col-sm-offset-2 col-sm-5">
-					<button type="button" class="btn btn-primary" onclick='f_create_db(2);'>2. Create database and tables</button><div id="result_2" class="alert alert-danger" style="display: none"></div>
+					<button type="button" class="btn btn-primary" onclick='f_create_db(2);'>2. Create database</button><div id="result_2" class="alert alert-danger" style="display: none"></div>
 				</div>
 			</div>
 			<div class="form-group">
 				<div class="col-sm-offset-2 col-sm-5">
-					<h3>New DB user</h3>
+					<button type="button" class="btn btn-primary" onclick='f_create_tables(3);'>3. Create tables</button><div id="result_3" class="alert alert-danger" style="display: none"></div>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-offset-2 col-sm-5">
+					<h3>New MySQL DB user or enter existing</h3>
 				</div>
 			</div>
 			<div class="form-group">
@@ -624,12 +964,12 @@ EOT;
 			</div>
 			<div class="form-group">
 				<div class="col-sm-offset-2 col-sm-5">
-					<button type="button" class="btn btn-primary" onclick='f_create_db_user(3);'>3. Create DB user</button><div id="result_3" class="alert alert-danger" style="display: none"></div>
+					<button type="button" class="btn btn-primary" onclick='f_create_db_user(4);'>4. Create DB user</button><div id="result_4" class="alert alert-danger" style="display: none"></div>
 				</div>
 			</div>
 			<div class="form-group">
 				<div class="col-sm-offset-2 col-sm-5">
-					<button type="button" class="btn btn-primary" onclick='f_grant_access(4);'>4. Grant access to database</button><div id="result_4" class="alert alert-danger" style="display: none"></div>
+					<button type="button" class="btn btn-primary" onclick='f_grant_access(5);'>5. Grant access to database</button><div id="result_5" class="alert alert-danger" style="display: none"></div>
 				</div>
 			</div>
 			<div class="form-group">
@@ -697,19 +1037,7 @@ EOT;
 			</div>
 			<div class="form-group">
 				<div class="col-sm-offset-2 col-sm-5">
-					<button type="button" class="btn btn-primary" onclick='f_check_mail(5);'>5. Check mail connection</button><div id="result_5" class="alert alert-danger" style="display: none"></div>
-				</div>
-			</div>
-			<div class="form-group">
-				<label for="upload_dir" class="control-label col-sm-2">Upload directory:</label>
-				<div class="col-sm-5">
-					<input id="upload_dir" class="form-control" type="text" value="<?php echo htmlspecialchars(dirname($_SERVER['SCRIPT_FILENAME'])); ?>/upload" />
-				</div>
-			</div>
-			<div class="form-group">
-				<label for="allow_mails" class="control-label col-sm-2">Allow mails (regexp):</label>
-				<div class="col-sm-5">
-					<input id="allow_mails" class="form-control" type="text" value="^.+@.+$" />
+					<button type="button" class="btn btn-primary" onclick='f_check_mail(6);'>6. Check mail connection</button><div id="result_6" class="alert alert-danger" style="display: none"></div>
 				</div>
 			</div>
 			<div class="form-group">
@@ -731,12 +1059,29 @@ EOT;
 			</div>
 			<div class="form-group">
 				<div class="col-sm-offset-2 col-sm-5">
-					<button type="button" class="btn btn-primary" onclick='f_create_admin_account(6);'>6. Create admin account</button><div id="result_6" class="alert alert-danger" style="display: none"></div>
+					<button type="button" class="btn btn-primary" onclick='f_create_admin_account(7);'>7. Create admin account</button><div id="result_7" class="alert alert-danger" style="display: none"></div>
 				</div>
 			</div>
 			<div class="form-group">
 				<div class="col-sm-offset-2 col-sm-5">
-					<button type="button" class="btn btn-primary" onclick='f_save_config(7);'>7. Save config</button><div id="result_7" class="alert alert-danger" style="display: none"></div>
+					<h3>Misc settings</h3>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="upload_dir" class="control-label col-sm-2">Upload directory:</label>
+				<div class="col-sm-5">
+					<input id="upload_dir" class="form-control" type="text" value="<?php echo htmlspecialchars(dirname($_SERVER['SCRIPT_FILENAME'])); ?>/upload" />
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="allow_mails" class="control-label col-sm-2">Allow mails (regexp match):</label>
+				<div class="col-sm-5">
+					<input id="allow_mails" class="form-control" type="text" value="^.+@.+$" />
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-offset-2 col-sm-5">
+					<button type="button" class="btn btn-primary" onclick='f_save_config(8);'>8. Save config</button><div id="result_8" class="alert alert-danger" style="display: none"></div>
 				</div>
 			</div>
 		</div>
