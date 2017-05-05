@@ -113,7 +113,7 @@ function delete_subdir($db, $uid, $id)
 
 	if(empty($uid))
 	{
-		echo '{"result": 1, "status": "Log in, please"}';
+		echo '{"code": 1, "status": "Log in, please"}';
 		exit;
 	}
 
@@ -123,21 +123,21 @@ function delete_subdir($db, $uid, $id)
 		{
 			if(empty($_POST['name']))
 			{
-				echo '{"result": 1, "status": "name undefined"}';
+				echo '{"code": 1, "status": "name undefined"}';
 				exit;
 			}
 
 			$db->put(rpv("INSERT INTO `zxs_files` (`uid`, `pid`, `type`, `name`, `date`) VALUES (#, #, 1, !, NOW())", $uid, $id, @$_POST['name']));
 			$id = $db->last_id();
 
-			echo '{"result": 0, "id": '.$id.', "name": "'.json_escape($_POST['name']).'", "desc": ""}';
+			echo '{"code": 0, "id": '.$id.', "name": "'.json_escape($_POST['name']).'", "desc": ""}';
 			exit;
 		}
 		case 'delete':
 		{
 			if(!$id)
 			{
-				echo '{"result": 1, "status": "id undefined"}';
+				echo '{"code": 1, "status": "id undefined"}';
 				exit;
 			}
 
@@ -156,14 +156,14 @@ function delete_subdir($db, $uid, $id)
 			}
 
 			$id = 0;
-			echo '{"result": 0}';
+			echo '{"code": 0}';
 			exit;
 		}
 		case 'delete_selected':
 		{
 			if(empty($_POST['fid']))
 			{
-				echo '{"result": 1, "status": "fid undefined"}';
+				echo '{"code": 1, "status": "fid undefined"}';
 				exit;
 			}
 
@@ -185,38 +185,38 @@ function delete_subdir($db, $uid, $id)
 				}
 			}
 
-			echo '{"result": 0}';
+			echo '{"code": 0}';
 			exit;
 		}
 		case 'rename':
 		{
 			if(!$id)
 			{
-				echo '{"result": 1, "status": "id undefined"}';
+				echo '{"code": 1, "status": "id undefined"}';
 				exit;
 			}
 			if(empty($_POST['name']))
 			{
-				echo '{"result": 1, "status": "name undefined"}';
+				echo '{"code": 1, "status": "name undefined"}';
 				exit;
 			}
 
 			$db->put(rpv("UPDATE `zxs_files` SET `name` = ! WHERE `uid` = # AND `id` = # LIMIT 1", $_POST['name'], $uid, $id));
-			echo '{"result": 0, "id": '.$id.', "name": "'.json_escape($_POST['name']).'"}';
+			echo '{"code": 0, "id": '.$id.', "name": "'.json_escape($_POST['name']).'"}';
 			exit;
 		}
 		case 'expire':
 		{
 			if(!$id)
 			{
-				echo '{"result": 1, "status": "id undefined"}';
+				echo '{"code": 1, "status": "id undefined"}';
 				exit;
 			}
 			if(empty($_POST['date']))
 			{
 				$db->put(rpv("UPDATE `zxs_files` SET `expire` = NULL WHERE `uid` = # AND `id` = # LIMIT 1", $uid, $id));
 
-				echo '{"result": 0, "id": '.$id.', "date": ""}';
+				echo '{"code": 0, "id": '.$id.', "date": ""}';
 			}
 			else
 			{
@@ -230,13 +230,13 @@ function delete_subdir($db, $uid, $id)
 				$ny = intval(@$d[2]);
 				if(!datecheck($nd, $nm, $ny) || (datecmp($nd, $nm, $ny, $dd, $dm, $dy) < 0))
 				{
-					echo '{"result": 1, "status": "date invalid value"}';
+					echo '{"code": 1, "status": "date invalid value"}';
 					exit;
 				}
 
 				$db->put(rpv("UPDATE `zxs_files` SET `expire` = ! WHERE `uid` = # AND `id` = # LIMIT 1", sprintf("%04d-%02d-%02d", $ny, $nm, $nd), $uid, $id));
 
-				echo '{"result": 0, "id": '.$id.', "date": "'.json_escape(sprintf("%02d.%02d.%04d", $nd, $nm, $ny)).'"}';
+				echo '{"code": 0, "id": '.$id.', "date": "'.json_escape(sprintf("%02d.%02d.%04d", $nd, $nm, $ny)).'"}';
 			}
 			exit;
 		}
@@ -244,33 +244,33 @@ function delete_subdir($db, $uid, $id)
 		{
 			if(!$id)
 			{
-				echo '{"result": 1, "status": "id undefined"}';
+				echo '{"code": 1, "status": "id undefined"}';
 				exit;
 			}
 
 			$db->put(rpv("UPDATE `zxs_files` SET `desc` = ! WHERE `uid` = # AND `id` = # LIMIT 1", @$_POST['name'], $uid, $id));
 
-			echo '{"result": 0, "id": '.$id.', "desc": "'.json_escape(@$_POST['name']).'"}';
+			echo '{"code": 0, "id": '.$id.', "desc": "'.json_escape(@$_POST['name']).'"}';
 			exit;
 		}
 		case 'desc_link':
 		{
 			if(!$id)
 			{
-				echo '{"result": 1, "status": "id undefined"}';
+				echo '{"code": 1, "status": "id undefined"}';
 				exit;
 			}
 
 			$db->put(rpv("UPDATE `zxs_links` SET `desc` = ! WHERE `uid` = # AND `id` = # LIMIT 1", @$_POST['name'], $uid, $id));
 
-			echo '{"result": 0, "id": '.$id.', "desc": "'.json_escape(@$_POST['name']).'"}';
+			echo '{"code": 0, "id": '.$id.', "desc": "'.json_escape(@$_POST['name']).'"}';
 			exit;
 		}
 		case 'pinon':
 		{
 			if(!$id)
 			{
-				echo '{"result": 1, "status": "id undefined"}';
+				echo '{"code": 1, "status": "id undefined"}';
 				exit;
 			}
 
@@ -278,20 +278,20 @@ function delete_subdir($db, $uid, $id)
 
 			$db->put(rpv("UPDATE `zxs_links` SET `pin` = ! WHERE `id` = # LIMIT 1", $pin, $id));
 
-			echo '{"result": 0, "id": '.$id.', "pin": "'.$pin.'"}';
+			echo '{"code": 0, "id": '.$id.', "pin": "'.$pin.'"}';
 			exit;
 		}
 		case 'pinoff':
 		{
 			if(!$id)
 			{
-				echo '{"result": 1, "status": "id undefined"}';
+				echo '{"code": 1, "status": "id undefined"}';
 				exit;
 			}
 
 			$db->put(rpv("UPDATE `zxs_links` SET `pin` = '' WHERE `id` = # LIMIT 1", $id));
 
-			echo '{"result": 0, "id": '.$id.', "pin": ""}';
+			echo '{"code": 0, "id": '.$id.', "pin": ""}';
 			exit;
 		}
 		case 'share':
@@ -299,7 +299,7 @@ function delete_subdir($db, $uid, $id)
 			// check file uid!
 			if(!$id)
 			{
-				echo '{"result": 1, "status": "id undefined"}';
+				echo '{"code": 1, "status": "id undefined"}';
 				exit;
 			}
 			$lid = 0;
@@ -314,7 +314,7 @@ function delete_subdir($db, $uid, $id)
 				$db->put(rpv("INSERT INTO `zxs_link_files` (`lid`, `fid`, `pid`) VALUES (#, #, 0)", $lid, $id));
 			}
 
-			echo '{"result": 0, "id": '.$lid.', "pin": "'.$pin.'"}';
+			echo '{"code": 0, "id": '.$lid.', "pin": "'.$pin.'"}';
 			exit;
 		}
 		case 'share_selected':
@@ -322,7 +322,7 @@ function delete_subdir($db, $uid, $id)
 			// check file uid!
 			if(empty($_POST['fid']))
 			{
-				echo '{"result": 1, "status": "fid undefined"}';
+				echo '{"code": 1, "status": "fid undefined"}';
 				exit;
 			}
 
@@ -357,14 +357,14 @@ function delete_subdir($db, $uid, $id)
 
 			$db->put(rpv("UPDATE `zxs_links` SET `desc` = ! WHERE `id` = # LIMIT 1", $desc, $lid));
 
-			echo '{"result": 0, "id": '.$lid.', "pin": "'.$pin.'"}';
+			echo '{"code": 0, "id": '.$lid.', "pin": "'.$pin.'"}';
 			exit;
 		}
 		case 'unlink':
 		{
 			if(!$id)
 			{
-				echo '{"result": 1, "status": "id undefined"}';
+				echo '{"code": 1, "status": "id undefined"}';
 				exit;
 			}
 			//--db_connect();
@@ -377,14 +377,14 @@ function delete_subdir($db, $uid, $id)
 			$db->put(rpv("DELETE FROM `zxs_link_files` WHERE `pid` <> 0 AND `lid` = #", $id));
 			$id = 0;
 
-			echo '{"result": 0}';
+			echo '{"code": 0}';
 			exit;
 		}
 		case 'expand':
 		{
 			if(!$id)
 			{
-				echo '{"result": 1, "status": "id undefined"}';
+				echo '{"code": 1, "status": "id undefined"}';
 				exit;
 			}
 			$pid = 0;
@@ -408,9 +408,9 @@ function delete_subdir($db, $uid, $id)
 				}
 			}
 
-			echo '{"result": 0, "list": ['.$list.']}';
+			echo '{"code": 0, "list": ['.$list.']}';
 			exit;
 		}
 	}
 
-	echo '{"result": 1, "status": "action undefined"}';
+	echo '{"code": 1, "status": "action undefined"}';

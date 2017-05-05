@@ -45,7 +45,7 @@ if(not exists $ENV{'HTTP_X_UPLOAD_FILENAME'}
 or not exists $ENV{'HTTP_X_UPLOAD_FILESIZE'}
 or not exists $ENV{'HTTP_X_UPLOAD_ID'}
 or not exists $ENV{'HTTP_X_UPLOAD_UID'}
-or not exists $ENV{'HTTP_X_UPLOAD_PID'}) { print_exit '{"result": 1, "status": "HTTP headers undefined"}'; }
+or not exists $ENV{'HTTP_X_UPLOAD_PID'}) { print_exit '{"code": 1, "status": "HTTP headers undefined"}'; }
 
 my $filename = uri_unescape($ENV{'HTTP_X_UPLOAD_FILENAME'});
 my $fsz = $ENV{'HTTP_X_UPLOAD_FILESIZE'};
@@ -53,34 +53,34 @@ my $uid = $ENV{'HTTP_X_UPLOAD_UID'};
 my $pid = $ENV{'HTTP_X_UPLOAD_PID'};
 my $id = $ENV{'HTTP_X_UPLOAD_ID'};
 
-if($id !~ /^\d+$/) { print_exit '{"result": 1, "status": "ID undefined"}'; }
-if($uid !~ /^\d+$/) { print_exit '{"result": 1, "status": "UID undefined"}'; }
-if($pid !~ /^\d+$/) { print_exit '{"result": 1, "status": "PID undefined"}'; }
-if($fsz !~ /^\d+$/) { print_exit '{"result": 1, "status": "FileSize undefined"}'; }
+if($id !~ /^\d+$/) { print_exit '{"code": 1, "status": "ID undefined"}'; }
+if($uid !~ /^\d+$/) { print_exit '{"code": 1, "status": "UID undefined"}'; }
+if($pid !~ /^\d+$/) { print_exit '{"code": 1, "status": "PID undefined"}'; }
+if($fsz !~ /^\d+$/) { print_exit '{"code": 1, "status": "FileSize undefined"}'; }
 
 $filename =~ m/^.*?[\\\/]*([^\\\/]*)$/;
 my $fn = $1;
 
-my $dbh = DBI->connect("DBI:$driver:$config{database}", $config{user}, $config{password}, {AutoCommit=>1,RaiseError=>1,PrintError=>0}) or print_exit '{"result": 1, "status": "SQL: Error connect DB"}';
-$dbh->do("SET NAMES 'utf8'") or print_exit '{"result": 1, "status": "SQL: Error set names utf8"}';
+my $dbh = DBI->connect("DBI:$driver:$config{database}", $config{user}, $config{password}, {AutoCommit=>1,RaiseError=>1,PrintError=>0}) or print_exit '{"code": 1, "status": "SQL: Error connect DB"}';
+$dbh->do("SET NAMES 'utf8'") or print_exit '{"code": 1, "status": "SQL: Error set names utf8"}';
 
 my $sth;
 
 if(!$id)
 {
-    $sth = $dbh->prepare("INSERT INTO zxs_files (uid, pid, name, size, date, expire, type, deleted) VALUES (?, ?, ?, 0, NOW(), DATE_ADD(CURDATE(), INTERVAL 3 MONTH), 3, 1)") or print_exit '{"result": 1, "status": "SQL: Error insert file"}';
-    $sth->execute($uid, $pid, $fn) or print_exit '{"result": 1, "status": "SQL: Error insert file"}';
+    $sth = $dbh->prepare("INSERT INTO zxs_files (uid, pid, name, size, date, expire, type, deleted) VALUES (?, ?, ?, 0, NOW(), DATE_ADD(CURDATE(), INTERVAL 3 MONTH), 3, 1)") or print_exit '{"code": 1, "status": "SQL: Error insert file"}';
+    $sth->execute($uid, $pid, $fn) or print_exit '{"code": 1, "status": "SQL: Error insert file"}';
     $id = $sth->{mysql_insertid};
     $sth->finish();
-    open(LOCAL, ">$config{upload_dir}/f$id") or print_exit '{"result": 1, "status": "Error create file"}';
+    open(LOCAL, ">$config{upload_dir}/f$id") or print_exit '{"code": 1, "status": "Error create file"}';
 }
 else
 {
-    $sth = $dbh->prepare("SELECT m.`id` FROM `zxs_files` AS m WHERE m.`id` = ? AND m.`uid` = ? AND m.`pid` = ? AND m.`type` = 3 AND m.`deleted` = 1 LIMIT 1") or print_exit '{"result": 1, "status": "SQL: Error get file data"}';
-    $sth->execute($id, $uid, $pid) or print_exit '{"result": 1, "status": "SQL: Error get file data"}';
-    $sth->rows() or print_exit '{"result": 1, "status": "SQL: Error get file data"}';
+    $sth = $dbh->prepare("SELECT m.`id` FROM `zxs_files` AS m WHERE m.`id` = ? AND m.`uid` = ? AND m.`pid` = ? AND m.`type` = 3 AND m.`deleted` = 1 LIMIT 1") or print_exit '{"code": 1, "status": "SQL: Error get file data"}';
+    $sth->execute($id, $uid, $pid) or print_exit '{"code": 1, "status": "SQL: Error get file data"}';
+    $sth->rows() or print_exit '{"code": 1, "status": "SQL: Error get file data"}';
     $sth->finish();
-    open(LOCAL, ">>$config{upload_dir}/f$id") or print_exit '{"result": 1, "status": "Error open file"}';
+    open(LOCAL, ">>$config{upload_dir}/f$id") or print_exit '{"code": 1, "status": "Error open file"}';
 }
 
 while(<STDIN>)
@@ -93,16 +93,16 @@ close(LOCAL);
 my $fs = -s "$config{upload_dir}/f$id";
 if($fs == $fsz)
 {
-    $sth = $dbh->prepare("UPDATE zxs_files SET size=?, type=0, deleted=0 WHERE id = ? AND type=3 AND deleted=1 LIMIT 1") or print_exit '{"result": 1, "status": "SQL: Error update file size"}';
-    $sth->execute($fs, $id) or print_exit '{"result": 1, "status": "SQL: Error update file size"}';
+    $sth = $dbh->prepare("UPDATE zxs_files SET size=?, type=0, deleted=0 WHERE id = ? AND type=3 AND deleted=1 LIMIT 1") or print_exit '{"code": 1, "status": "SQL: Error update file size"}';
+    $sth->execute($fs, $id) or print_exit '{"code": 1, "status": "SQL: Error update file size"}';
     $sth->finish();
 }
 
-$sth = $dbh->prepare("SELECT m.`id`, m.`name`, m.`size`, DATE_FORMAT(m.`date`, '%d.%m.%Y'), DATE_FORMAT(m.`expire`, '%d.%m.%Y'), m.`type`, m.`desc` FROM `zxs_files` AS m WHERE m.`id` = ? AND m.`uid` = ? LIMIT 1") or print_exit '{"result": 1, "status": "SQL: Error get file data"}';
-$sth->execute($id, $uid) or print_exit '{"result": 1, "status": "SQL: Error get file data"}';
+$sth = $dbh->prepare("SELECT m.`id`, m.`name`, m.`size`, DATE_FORMAT(m.`date`, '%d.%m.%Y'), DATE_FORMAT(m.`expire`, '%d.%m.%Y'), m.`type`, m.`desc` FROM `zxs_files` AS m WHERE m.`id` = ? AND m.`uid` = ? LIMIT 1") or print_exit '{"code": 1, "status": "SQL: Error get file data"}';
+$sth->execute($id, $uid) or print_exit '{"code": 1, "status": "SQL: Error get file data"}';
 my @row = $sth->fetchrow_array();
 $sth->finish();
 
 $dbh->disconnect();
 
-print '{"result": 0, "id": '.$id.', "name": "'.addslashes($row[1]).'", "size": '.$row[2].', "desc": "'.addslashes($row[6]).'", "date": "'.$row[3].'", "expire": "'.$row[4].'"}';
+print '{"code": 0, "id": '.$id.', "name": "'.addslashes($row[1]).'", "size": '.$row[2].', "desc": "'.addslashes($row[6]).'", "date": "'.$row[3].'", "expire": "'.$row[4].'"}';

@@ -141,7 +141,7 @@ function f_delete(id)
 					if(this.status == 200)
 					{
 						var result = JSON.parse(this.responseText);
-						if(result.result)
+						if(result.code)
 						{
 							f_popup("Error", result.status);
 						}
@@ -177,7 +177,7 @@ function f_unlink(id)
 						if(this.status == 200)
 						{
 							var result = JSON.parse(this.responseText);
-							if(result.result)
+							if(result.code)
 							{
 								f_popup("Error", result.status);
 							}
@@ -215,7 +215,7 @@ function f_rename_event(event, el, id, old)
 						if(this.status == 200)
 						{
 							var result = JSON.parse(this.responseText);
-							if(result.result)
+							if(result.code)
 							{
 								gi("fname"+id).textContent = old;
 								f_popup("Error", result.status);
@@ -276,7 +276,7 @@ function f_rename_dir_event(event, el, id, old)
 						if(this.status == 200)
 						{
 							var result = JSON.parse(this.responseText);
-							if(result.result)
+							if(result.code)
 							{
 								gi("fname"+id).innerHTML = '<a id="dir'+id+'" class="boldtext" href="/'+id+'/">'+old+'</a>';
 								f_popup("Error", result.status);
@@ -331,7 +331,7 @@ function f_desc_event(event, el, id, old)
 					if(this.status == 200)
 					{
 						var result = JSON.parse(this.responseText);
-						if(result.result)
+						if(result.code)
 						{
 							f_popup("Error", result.status);
 						}
@@ -386,7 +386,7 @@ function f_desc_link_event(event, el, id, old)
 					if(this.status == 200)
 					{
 						var result = JSON.parse(this.responseText);
-						if(result.result)
+						if(result.code)
 						{
 							f_popup("Error", result.status);
 						}
@@ -439,7 +439,7 @@ function f_share(id)
 				if(this.status == 200)
 				{
 					var r = JSON.parse(this.responseText);
-					if(r.result)
+					if(r.code)
 					{
 						f_popup("Error", r.status);
 					}
@@ -473,7 +473,7 @@ function f_pinoff(id)
 				if(this.status == 200)
 				{
 					var result = JSON.parse(this.responseText);
-					if(result.result)
+					if(result.code)
 					{
 						f_popup("Error", result.status);
 					}
@@ -505,7 +505,7 @@ function f_pinon(id)
 				if(this.status == 200)
 				{
 					var result = JSON.parse(this.responseText);
-					if(result.result)
+					if(result.code)
 					{
 						f_popup("Error", result.status);
 					}
@@ -562,7 +562,7 @@ function f_share_selected(el)
 					if(this.status == 200)
 					{
 						var r = JSON.parse(this.responseText);
-						if(r.result)
+						if(r.code)
 						{
 							f_popup("Error", r.status);
 						}
@@ -625,7 +625,7 @@ function f_delete_selected(el)
 					if(this.status == 200)
 					{
 						var r = JSON.parse(this.responseText);
-						if(r.result)
+						if(r.code)
 						{
 							f_popup("Error", r.status);
 						}
@@ -671,7 +671,7 @@ function f_mkdir_event(el, id, event)
 						if(this.status == 200)
 						{
 							var result = JSON.parse(this.responseText);
-							if(result.result)
+							if(result.code)
 							{
 								f_popup("Error", result.status);
 								var row = gi("rowmkdir");
@@ -762,7 +762,7 @@ function f_expand(self, id, pid)
 					if(this.status == 200)
 					{
 						var result = JSON.parse(this.responseText);
-						if(result.result)
+						if(result.code)
 						{
 							f_popup("Error", result.status);
 						}
@@ -815,7 +815,7 @@ function f_upload0(uid, id, file, k)
 				if(this.status == 200)
 				{
 					var result = JSON.parse(this.responseText);
-					if(result.result)
+					if(result.code)
 					{
 						gi("desc" + j).textContent =  result.status;
 						gi("button" + j).textContent = "";
@@ -915,7 +915,7 @@ function f_upload(uid, id, file, k, file_pos, fid)
 				{
 					//alert(this.responseText);
 					var result = JSON.parse(this.responseText);
-					if(result.result)
+					if(result.code)
 					{
 						gi("desc" + j).textContent =  result.status;
 						gi("button" + j).textContent = "";
@@ -1110,7 +1110,7 @@ function f_expire(id, date)
 				if(this.status == 200)
 				{
 					var result = JSON.parse(this.responseText);
-					if(result.result)
+					if(result.code)
 					{
 						f_popup("Error", result.status);
 					}

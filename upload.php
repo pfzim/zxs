@@ -38,7 +38,7 @@
 
 	if(empty($_SERVER['HTTP_X_UPLOAD_FILENAME']) || !isset($_SERVER['HTTP_X_UPLOAD_FILESIZE']) || !isset($_SERVER['HTTP_X_UPLOAD_ID']) || !isset($_SERVER['HTTP_X_UPLOAD_PID']))
 	{
-		echo '{"result": 1, "status": "HTTP headers undefined"}';
+		echo '{"code": 1, "status": "HTTP headers undefined"}';
 		exit;
 	}
 
@@ -50,19 +50,19 @@
 
 	if(!$uid)
 	{
-		echo '{"result": 1, "status": "UID undefined"}';
+		echo '{"code": 1, "status": "UID undefined"}';
 		exit; 
 	}
 	
-	//if(!$id) { echo '{"result": 1, "status": "ID undefined"}'; exit; }
-	//if(!$pid) { echo '{"result": 1, "status": "PID undefined"}'; exit; }
-	//if(!$fsz) { echo '{"result": 1, "status": "FileSize undefined"}'; exit; }
+	//if(!$id) { echo '{"code": 1, "status": "ID undefined"}'; exit; }
+	//if(!$pid) { echo '{"code": 1, "status": "PID undefined"}'; exit; }
+	//if(!$fsz) { echo '{"code": 1, "status": "FileSize undefined"}'; exit; }
 
 	$db = new MySQLDB();
 	
 	if(!$db->connect())
 	{
-		echo '{"result": 1, "status": "SQL: Error connect DB"}';
+		echo '{"code": 1, "status": "SQL: Error connect DB"}';
 		exit;
 	}
 
@@ -72,7 +72,7 @@
 
 		if(!$db->put(rpv("INSERT INTO zxs_files (uid, pid, name, size, date, expire, type, deleted) VALUES (#, #, !, 0, NOW(), DATE_ADD(CURDATE(), INTERVAL 3 MONTH), 3, 1)", $uid, $pid, $fn)))
 		{
-			echo'{"result": 1, "status": "SQL: Error insert file"}';
+			echo'{"code": 1, "status": "SQL: Error insert file"}';
 			exit;
 		}
 		$id = $db->last_id();
@@ -81,7 +81,7 @@
 	{
 		if(!$db->select(rpv("SELECT m.`id` FROM `zxs_files` AS m WHERE m.`id` = # AND m.`uid` = # AND m.`pid` = # AND m.`type` = 3 AND m.`deleted` = 1 LIMIT 1", $id, $uid, $pid)))
 		{
-			echo'{"result": 1, "status": "SQL: Error get file data"}';
+			echo'{"code": 1, "status": "SQL: Error get file data"}';
 			exit;
 		}
 	}
@@ -89,7 +89,7 @@
 	$fh = fopen(UPLOAD_DIR."/f$id", 'a+b');
 	if(!$fh)
 	{
-		echo '{"result": 1, "status": "Error create file"}';
+		echo '{"code": 1, "status": "Error create file"}';
 		exit;
 	}
 
@@ -97,7 +97,7 @@
 	if(!$fi)
 	{
 		fclose($fh);
-		echo '{"result": 1, "status": "Error open php://input"}';
+		echo '{"code": 1, "status": "Error open php://input"}';
 		exit;
 	}
 
@@ -115,15 +115,15 @@
 	{
 		if(!$db->put(rpv("UPDATE zxs_files SET size = #, type=0, deleted=0 WHERE id = # AND type=3 AND deleted=1 LIMIT 1", $fs, $id)))
 		{
-			echo '{"result": 1, "status": "SQL: Error update file size"}';
+			echo '{"code": 1, "status": "SQL: Error update file size"}';
 			exit;
 		}
 	}
 
 	if(!$db->select(rpv("SELECT m.`id`, m.`name`, m.`size`, DATE_FORMAT(m.`date`, '%d.%m.%Y'), DATE_FORMAT(m.`expire`, '%d.%m.%Y'), m.`type`, m.`desc` FROM `zxs_files` AS m WHERE m.`id` = # AND m.`uid` = # LIMIT 1", $id, $uid)))
 	{
-		echo '{"result": 1, "status": "SQL: Error get file data"}';
+		echo '{"code": 1, "status": "SQL: Error get file data"}';
 		exit;
 	}
 
-	print '{"result": 0, "id": '.$id.', "name": "'.json_escape($db->data[0][1]).'", "size": '.$db->data[0][2].', "desc": "'.json_escape($db->data[0][6]).'", "date": "'.$db->data[0][3].'", "expire": "'.$db->data[0][4].'"}';
+	print '{"code": 0, "id": '.$id.', "name": "'.json_escape($db->data[0][1]).'", "size": '.$db->data[0][2].', "desc": "'.json_escape($db->data[0][6]).'", "date": "'.$db->data[0][3].'", "expire": "'.$db->data[0][4].'"}';
