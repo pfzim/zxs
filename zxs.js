@@ -138,22 +138,30 @@ function f_delete(id)
 			xhr.open("get", "/zxsa.php?action=delete&id="+id, true);
 			xhr.onreadystatechange = function(e) {
 				if(this.readyState == 4) {
+					var result;
 					if(this.status == 200)
 					{
-						var result = JSON.parse(this.responseText);
-						if(result.code)
+						try
 						{
-							f_popup("Error", result.status);
+							result = JSON.parse(this.responseText);
 						}
-						else
+						catch(e)
 						{
-							var row = gi("row"+id);
-							row.parentNode.removeChild(row);
+							result = {code: 1, status: "Response: "+this.responseText};
 						}
 					}
 					else
 					{
-						f_popup("Error", "failure");
+						result = {code: 1, status: "AJAX error code: "+this.status};
+					}
+					if(result.code)
+					{
+						f_popup("Error", result.status);
+					}
+					else
+					{
+						var row = gi("row"+id);
+						row.parentNode.removeChild(row);
 					}
 				}
 			};
@@ -174,22 +182,30 @@ function f_unlink(id)
 			xhr.open("get", "/zxsa.php?action=unlink&id="+id, true);
 			xhr.onreadystatechange = function(e) {
 					if(this.readyState == 4) {
+						var result;
 						if(this.status == 200)
 						{
-							var result = JSON.parse(this.responseText);
-							if(result.code)
+							try
 							{
-								f_popup("Error", result.status);
+								result = JSON.parse(this.responseText);
 							}
-							else
+							catch(e)
 							{
-								var row = gi("row"+id);
-								row.parentNode.removeChild(row);
+								result = {code: 1, status: "Response: "+this.responseText};
 							}
 						}
 						else
 						{
-							f_popup("Error", "failure");
+							result = {code: 1, status: "AJAX error code: "+this.status};
+						}
+						if(result.code)
+						{
+							f_popup("Error", result.status);
+						}
+						else
+						{
+							var row = gi("row"+id);
+							row.parentNode.removeChild(row);
 						}
 					}
 			};
@@ -212,24 +228,31 @@ function f_rename_event(event, el, id, old)
 				xhr.open("post", "/zxsa.php?action=rename&id="+id, true);
 				xhr.onreadystatechange = function(e) {
 					if(this.readyState == 4) {
+						var result;
 						if(this.status == 200)
 						{
-							var result = JSON.parse(this.responseText);
-							if(result.code)
+							try
 							{
-								gi("fname"+id).textContent = old;
-								f_popup("Error", result.status);
+								result = JSON.parse(this.responseText);
 							}
-							else
+							catch(e)
 							{
-								gi("fname"+id).textContent = result.name;
-								gi("fname"+id).onclick = function() {f_rename(gi("fname"+id), id)};
+								result = {code: 1, status: "Response: "+this.responseText};
 							}
 						}
 						else
 						{
+							result = {code: 1, status: "AJAX error code: "+this.status};
+						}
+						if(result.code)
+						{
 							gi("fname"+id).textContent = old;
-							f_popup("Error", "failure");
+							f_popup("Error", result.status);
+						}
+						else
+						{
+							gi("fname"+id).textContent = result.name;
+							gi("fname"+id).onclick = function() {f_rename(gi("fname"+id), id)};
 						}
 					}
 				};
@@ -273,23 +296,30 @@ function f_rename_dir_event(event, el, id, old)
 				xhr.open("post", "/zxsa.php?action=rename&id="+id, true);
 				xhr.onreadystatechange = function(e) {
 					if(this.readyState == 4) {
+						var result;
 						if(this.status == 200)
 						{
-							var result = JSON.parse(this.responseText);
-							if(result.code)
+							try
 							{
-								gi("fname"+id).innerHTML = '<a id="dir'+id+'" class="boldtext" href="/'+id+'/">'+old+'</a>';
-								f_popup("Error", result.status);
+								result = JSON.parse(this.responseText);
 							}
-							else
+							catch(e)
 							{
-								gi("fname"+id).innerHTML = '<a id="dir'+id+'" class="boldtext" href="/'+id+'/">'+escapeHtml(result.name)+'</a>';
+								result = {code: 1, status: "Response: "+this.responseText};
 							}
 						}
 						else
 						{
+							result = {code: 1, status: "AJAX error code: "+this.status};
+						}
+						if(result.code)
+						{
 							gi("fname"+id).innerHTML = '<a id="dir'+id+'" class="boldtext" href="/'+id+'/">'+old+'</a>';
-							f_popup("Error", "failure");
+							f_popup("Error", result.status);
+						}
+						else
+						{
+							gi("fname"+id).innerHTML = '<a id="dir'+id+'" class="boldtext" href="/'+id+'/">'+escapeHtml(result.name)+'</a>';
 						}
 					}
 				};
@@ -328,22 +358,30 @@ function f_desc_event(event, el, id, old)
 			xhr.open("post", "/zxsa.php?action=desc&id="+id, true);
 			xhr.onreadystatechange = function(e) {
 				if(this.readyState == 4) {
+					var result;
 					if(this.status == 200)
 					{
-						var result = JSON.parse(this.responseText);
-						if(result.code)
+						try
 						{
-							f_popup("Error", result.status);
+							result = JSON.parse(this.responseText);
 						}
-						else
+						catch(e)
 						{
-							gi("desc"+id).textContent = result.desc;
-							gi("desc"+id).onclick = function() {f_desc(gi("desc"+id), id)};
+							result = {code: 1, status: "Response: "+this.responseText};
 						}
 					}
 					else
 					{
-						f_popup("Error", "failure");
+						result = {code: 1, status: "AJAX error code: "+this.status};
+					}
+					if(result.code)
+					{
+						f_popup("Error", result.status);
+					}
+					else
+					{
+						gi("desc"+id).textContent = result.desc;
+						gi("desc"+id).onclick = function() {f_desc(gi("desc"+id), id)};
 					}
 				}
 			};
@@ -383,22 +421,30 @@ function f_desc_link_event(event, el, id, old)
 			xhr.open("post", "/zxsa.php?action=desc_link&id="+id, true);
 			xhr.onreadystatechange = function(e) {
 				if(this.readyState == 4) {
+					var result;
 					if(this.status == 200)
 					{
-						var result = JSON.parse(this.responseText);
-						if(result.code)
+						try
 						{
-							f_popup("Error", result.status);
+							result = JSON.parse(this.responseText);
 						}
-						else
+						catch(e)
 						{
-							gi("desc"+id).textContent = result.desc;
-							gi("desc"+id).onclick = function() {f_desc_link(gi("desc"+id), id)};
+							result = {code: 1, status: "Response: "+this.responseText};
 						}
 					}
 					else
 					{
-						f_popup("Error", "failure");
+						result = {code: 1, status: "AJAX error code: "+this.status};
+					}
+					if(result.code)
+					{
+						f_popup("Error", result.status);
+					}
+					else
+					{
+						gi("desc"+id).textContent = result.desc;
+						gi("desc"+id).onclick = function() {f_desc_link(gi("desc"+id), id)};
 					}
 				}
 			};
@@ -436,23 +482,30 @@ function f_share(id)
 		xhr.open("get", "/zxsa.php?action=share&id="+id, true);
 		xhr.onreadystatechange = function(e) {
 			if (this.readyState == 4) {
+				var result;
 				if(this.status == 200)
 				{
-					var r = JSON.parse(this.responseText);
-					if(r.code)
+					try
 					{
-						f_popup("Error", r.status);
+						result = JSON.parse(this.responseText);
 					}
-					else
+					catch(e)
 					{
-						//f_popupHTML("Link created", window.location.protocol+'//'+window.location.hostname+window.location.pathname.replace('zxs.php','link.php')+'?id='+r.id+' PIN: ' + r.pin + ' <a href="link.php?id=' + r.id + '" onclick="return f_copy0(this.href + \' PIN: ' + r.pin + '\');">Copy</a>');
-						f_popupHTML("Link created", 'http://'+window.location.hostname+'/link/'+r.id+'/&nbsp;&nbsp;&nbsp;&nbsp;PIN: ' + r.pin + '&nbsp;&nbsp;&nbsp;&nbsp;<a href="/link/' + r.id + '/" onclick="return f_copy0(this.href + \'    PIN: ' + r.pin + '\');">Copy</a>');
+						result = {code: 1, status: "Response: "+this.responseText};
 					}
-
 				}
 				else
 				{
-					f_popup("Error", "failure");
+					result = {code: 1, status: "AJAX error code: "+this.status};
+				}
+				if(result.code)
+				{
+					f_popup("Error", result.status);
+				}
+				else
+				{
+					//f_popupHTML("Link created", window.location.protocol+'//'+window.location.hostname+window.location.pathname.replace('zxs.php','link.php')+'?id='+result.id+' PIN: ' + result.pin + ' <a href="link.php?id=' + r.id + '" onclick="return f_copy0(this.href + \' PIN: ' + result.pin + '\');">Copy</a>');
+					f_popupHTML("Link created", 'http://' + window.location.hostname + '/link/' + result.id + '/&nbsp;&nbsp;&nbsp;&nbsp;PIN: ' + result.pin + '&nbsp;&nbsp;&nbsp;&nbsp;<a href="/link/' + result.id + '/" onclick="return f_copy0(this.href + \'    PIN: ' + result.pin + '\');">Copy</a>');
 				}
 			}
 		};
@@ -470,17 +523,25 @@ function f_pinoff(id)
 		xhr.open("get", "/zxsa.php?action=pinoff&id="+id, true);
 		xhr.onreadystatechange = function(e) {
 			if(this.readyState == 4) {
+				var result;
 				if(this.status == 200)
 				{
-					var result = JSON.parse(this.responseText);
-					if(result.code)
+					try
 					{
-						f_popup("Error", result.status);
+						result = JSON.parse(this.responseText);
 					}
-					else
+					catch(e)
 					{
-						gi("pin"+id).textContent = result.pin;
+						result = {code: 1, status: "Response: "+this.responseText};
 					}
+				}
+				else
+				{
+					result = {code: 1, status: "AJAX error code: "+this.status};
+				}
+				if(result.code)
+				{
+					f_popup("Error", result.status);
 				}
 				else
 				{
@@ -502,21 +563,29 @@ function f_pinon(id)
 		xhr.open("get", "/zxsa.php?action=pinon&id="+id, true);
 		xhr.onreadystatechange = function(e) {
 			if(this.readyState == 4) {
+				var result;
 				if(this.status == 200)
 				{
-					var result = JSON.parse(this.responseText);
-					if(result.code)
+					try
 					{
-						f_popup("Error", result.status);
+						result = JSON.parse(this.responseText);
 					}
-					else
+					catch(e)
 					{
-						gi("pin"+id).textContent = result.pin;
+						result = {code: 1, status: "Response: "+this.responseText};
 					}
 				}
 				else
 				{
-					f_popup("Error", "failure");
+					result = {code: 1, status: "AJAX error code: "+this.status};
+				}
+				if(result.code)
+				{
+					f_popup("Error", result.status);
+				}
+				else
+				{
+					gi("pin"+id).textContent = result.pin;
 				}
 			}
 		};
@@ -559,23 +628,31 @@ function f_share_selected(el)
 			xhr.open("post", "/zxsa.php?action=share_selected", true);
 			xhr.onreadystatechange = function(e) {
 				if (this.readyState == 4) {
+					var result;
 					if(this.status == 200)
 					{
-						var r = JSON.parse(this.responseText);
-						if(r.code)
+						try
 						{
-							f_popup("Error", r.status);
+							result = JSON.parse(this.responseText);
 						}
-						else
+						catch(e)
 						{
-							//f_popup("Link created", '<a href="link.php?id=' + r.id + '">Link</a>' + ' PIN: ' + r.pin + ' <a href="link.php?id=' + r.id + '" onclick="return f_copy0(this.href + \' PIN: ' + r.pin + '\');">Copy</a>');
-							//f_popupHTML("Link created", window.location.protocol+'//'+window.location.hostname+window.location.pathname.replace('zxs.php','link.php')+'?id='+r.id+' PIN: ' + r.pin + ' <a href="link.php?id=' + r.id + '" onclick="return f_copy0(this.href + \' PIN: ' + r.pin + '\');">Copy</a>');
-							f_popupHTML("Link created", 'http://'+window.location.hostname+'/link/'+r.id+'/&nbsp;&nbsp;&nbsp;&nbsp;PIN: ' + r.pin + '&nbsp;&nbsp;&nbsp;&nbsp;<a href="/link/' + r.id + '/" onclick="return f_copy0(this.href + \'    PIN: ' + r.pin + '\');">Copy</a>');
+							result = {code: 1, status: "Response: "+this.responseText};
 						}
 					}
 					else
 					{
-						f_popup("Error", "failure");
+						result = {code: 1, status: "AJAX error code: "+this.status};
+					}
+					if(result.code)
+					{
+						f_popup("Error", result.status);
+					}
+					else
+					{
+						//f_popup("Link created", '<a href="link.php?id=' + result.id + '">Link</a>' + ' PIN: ' + result.pin + ' <a href="link.php?id=' + result.id + '" onclick="return f_copy0(this.href + \' PIN: ' + result.pin + '\');">Copy</a>');
+						//f_popupHTML("Link created", window.location.protocol+'//'+window.location.hostname+window.location.pathname.replace('zxs.php','link.php')+'?id='+result.id+' PIN: ' + result.pin + ' <a href="link.php?id=' + result.id + '" onclick="return f_copy0(this.href + \' PIN: ' + result.pin + '\');">Copy</a>');
+						f_popupHTML("Link created", 'http://' + window.location.hostname + '/link/' + result.id + '/&nbsp;&nbsp;&nbsp;&nbsp;PIN: ' + result.pin + '&nbsp;&nbsp;&nbsp;&nbsp;<a href="/link/' + result.id + '/" onclick="return f_copy0(this.href + \'    PIN: ' + result.pin + '\');">Copy</a>');
 					}
 				}
 			};
@@ -622,25 +699,33 @@ function f_delete_selected(el)
 			xhr.open("post", "/zxsa.php?action=delete_selected", true);
 			xhr.onreadystatechange = function(e) {
 				if (this.readyState == 4) {
+					var result;
 					if(this.status == 200)
 					{
-						var r = JSON.parse(this.responseText);
-						if(r.code)
+						try
 						{
-							f_popup("Error", r.status);
+							result = JSON.parse(this.responseText);
 						}
-						else
+						catch(e)
 						{
-							for(var i=0, n=rows.length;i<n;i++)
-							{
-								var row = gi("row"+rows[i]);
-								row.parentNode.removeChild(row);
-							}
+							result = {code: 1, status: "Response: "+this.responseText};
 						}
 					}
 					else
 					{
-						f_popup("Error", "Delete failed");
+						result = {code: 1, status: "AJAX error code: "+this.status};
+					}
+					if(result.code)
+					{
+						f_popup("Error", result.status);
+					}
+					else
+					{
+						for(var i=0, n=rows.length;i<n;i++)
+						{
+							var row = gi("row"+rows[i]);
+							row.parentNode.removeChild(row);
+						}
 					}
 				}
 			};
@@ -668,42 +753,48 @@ function f_mkdir_event(el, id, event)
 				xhr.open("post", "/zxsa.php?action=mkdir&id="+id, true);
 				xhr.onreadystatechange = function(e) {
 					if(this.readyState == 4) {
+						var result;
 						if(this.status == 200)
 						{
-							var result = JSON.parse(this.responseText);
-							if(result.code)
+							try
 							{
-								f_popup("Error", result.status);
-								var row = gi("rowmkdir");
-								row.parentNode.removeChild(row);
+								result = JSON.parse(this.responseText);
 							}
-							else
+							catch(e)
 							{
-								var row = gi("rowmkdir");
-								row.id = "row" + result.id;
-
-								row.cells[0].innerHTML = '<input type="checkbox" name="check" value="' + result.id + '"/>'
-
-								row.cells[1].id = "fname" + result.id;
-								row.cells[1].innerHTML = '<a id="dir'+result.id+'" class="boldtext" href="/' + result.id + '/">' + escapeHtml(result.name) + '</a>';
-
-								row.cells[2].textContent = '[DIR]';
-								row.cells[2].onclick = function() { f_rename_dir(result.id); };
-								row.cells[2].className = 'command';
-
-								row.cells[3].innerHTML = '<a href="#" onclick="return f_share(' + result.id + ');">Share</a> <a href="#" onclick="return f_delete(' + result.id + ');">Delete</a>';
-
-								row.cells[4].colspan = 3;
-								row.cells[4].id = "desc" + result.id;
-								row.cells[4].onclick = function() { f_desc(this, result.id); };
-								row.cells[4].textContent = result.desc;
+								result = {code: 1, status: "Response: "+this.responseText};
 							}
 						}
 						else
 						{
-							f_popup("Error", "failure");
+							result = {code: 1, status: "AJAX error code: "+this.status};
+						}
+						if(result.code)
+						{
+							f_popup("Error", result.status);
 							var row = gi("rowmkdir");
 							row.parentNode.removeChild(row);
+						}
+						else
+						{
+							var row = gi("rowmkdir");
+							row.id = "row" + result.id;
+
+							row.cells[0].innerHTML = '<input type="checkbox" name="check" value="' + result.id + '"/>'
+
+							row.cells[1].id = "fname" + result.id;
+							row.cells[1].innerHTML = '<a id="dir'+result.id+'" class="boldtext" href="/' + result.id + '/">' + escapeHtml(result.name) + '</a>';
+
+							row.cells[2].textContent = '[DIR]';
+							row.cells[2].onclick = function() { f_rename_dir(result.id); };
+							row.cells[2].className = 'command';
+
+							row.cells[3].innerHTML = '<a href="#" onclick="return f_share(' + result.id + ');">Share</a> <a href="#" onclick="return f_delete(' + result.id + ');">Delete</a>';
+
+							row.cells[4].colspan = 3;
+							row.cells[4].id = "desc" + result.id;
+							row.cells[4].onclick = function() { f_desc(this, result.id); };
+							row.cells[4].textContent = result.desc;
 						}
 					}
 				};
@@ -759,40 +850,48 @@ function f_expand(self, id, pid)
 			xhr.open("get", "/zxsa.php?action=expand&id="+id+"&pid="+pid, true);
 			xhr.onreadystatechange = function(e) {
 				if(this.readyState == 4) {
+					var result;
 					if(this.status == 200)
 					{
-						var result = JSON.parse(this.responseText);
-						if(result.code)
+						try
 						{
-							f_popup("Error", result.status);
+							result = JSON.parse(this.responseText);
 						}
-						else
+						catch(e)
 						{
-							var text = '<ul>';
-							for(var i = 0; i < result.list.length; i++)
-							{
-								if(result.list[i].type)
-								{
-									text += '<li class="command" onclick="return f_expand(this, '+id+', '+result.list[i].id+');"><b>'+escapeHtml(result.list[i].name)+'</b></li>';
-								}
-								else
-								{
-									text += '<li>'+escapeHtml(result.list[i].name)+' (<a href="/zxs.php?action=download&id='+result.list[i].id+'">'+formatbytes(result.list[i].size, 2)+'</a>)</li>';
-								}
-							}
-							text += '</ul>';
-							var div = document.createElement('div');
-							div.id = 'expand' + id + '_' + pid;
-							div.className = 'expand-list';
-							div.innerHTML = text;
-							//gi("row"+id).cells[0].appendChild(div);
-							//self.appendChild(div);
-							self.parentNode.insertBefore(div, self.nextSibling);
+							result = {code: 1, status: "Response: "+this.responseText};
 						}
 					}
 					else
 					{
-						f_popup("Error", "failure");
+						result = {code: 1, status: "AJAX error code: "+this.status};
+					}
+					if(result.code)
+					{
+						f_popup("Error", result.status);
+					}
+					else
+					{
+						var text = '<ul>';
+						for(var i = 0; i < result.list.length; i++)
+						{
+							if(result.list[i].type)
+							{
+								text += '<li class="command" onclick="return f_expand(this, '+id+', '+result.list[i].id+');"><b>'+escapeHtml(result.list[i].name)+'</b></li>';
+							}
+							else
+							{
+								text += '<li>'+escapeHtml(result.list[i].name)+' (<a href="/zxs.php?action=download&id='+result.list[i].id+'">'+formatbytes(result.list[i].size, 2)+'</a>)</li>';
+							}
+						}
+						text += '</ul>';
+						var div = document.createElement('div');
+						div.id = 'expand' + id + '_' + pid;
+						div.className = 'expand-list';
+						div.innerHTML = text;
+						//gi("row"+id).cells[0].appendChild(div);
+						//self.appendChild(div);
+						self.parentNode.insertBefore(div, self.nextSibling);
 					}
 				}
 			};
@@ -812,53 +911,57 @@ function f_upload0(uid, id, file, k)
 		xhr.onreadystatechange =  function(j) {
 			return function(e) {
 			if(this.readyState == 4) {
+				var result;
 				if(this.status == 200)
 				{
-					var result = JSON.parse(this.responseText);
-					if(result.code)
+					try
 					{
-						gi("desc" + j).textContent =  result.status;
-						gi("button" + j).textContent = "";
-						//var row = gi("upload"+j);
-						//row.parentNode.removeChild(row);
-						xhttp[j] = null;
+						result = JSON.parse(this.responseText);
 					}
-					else
+					catch(e)
 					{
-						var row = gi("upload" + j);
-						row.id = "row" + result.id;
-
-						row.cells[0].innerHTML = '<input type="checkbox" name="check" value="' + result.id + '"/>'
-
-						row.cells[1].id = "fname" + result.id;
-						row.cells[1].onclick = function() { f_rename(this, result.id); };
-						row.cells[1].textContent = result.name;
-						row.cells[1].className = 'command';
-
-						row.cells[2].innerHTML = '<a href="/zxs.php?action=download&id=' + result.id + '">' + formatbytes(result.size) + '</a>';
-
-						row.cells[3].innerHTML = '<a href="#" onclick="return f_share(' + result.id + ');">Share</a> <a href="#" onclick="return f_delete(' + result.id + ');">Delete</a>';
-
-						row.cells[4].id = "desc" + result.id;
-						row.cells[4].onclick = function() { f_desc(this, result.id); };
-						row.cells[4].textContent = result.desc;
-						row.cells[4].className = 'command';
-
-						row.cells[5].textContent = result.date;
-
-						row.cells[6].innerHTML = '<span id="expire'+result.id+'">'+escapeHtml(result.expire)+'</span>';
-						row.cells[6].onclick = function() { f_expire_cal(this, result.id); };
-						row.cells[6].className = 'command';
-
-						xhttp[j] = null;
+						result = {code: 1, status: "Response: "+this.responseText};
 					}
 				}
 				else
 				{
-					gi("desc" + j).textContent = "Upload failed (code: " + this.status + ")";
+					result = {code: 1, status: "AJAX error code: "+this.status};
+				}
+				if(result.code)
+				{
+					gi("desc" + j).textContent =  result.status;
 					gi("button" + j).textContent = "";
-					//var row = gi("upload" + j);
+					//var row = gi("upload"+j);
 					//row.parentNode.removeChild(row);
+					xhttp[j] = null;
+				}
+				else
+				{
+					var row = gi("upload" + j);
+					row.id = "row" + result.id;
+
+					row.cells[0].innerHTML = '<input type="checkbox" name="check" value="' + result.id + '"/>'
+
+					row.cells[1].id = "fname" + result.id;
+					row.cells[1].onclick = function() { f_rename(this, result.id); };
+					row.cells[1].textContent = result.name;
+					row.cells[1].className = 'command';
+
+					row.cells[2].innerHTML = '<a href="/zxs.php?action=download&id=' + result.id + '">' + formatbytes(result.size) + '</a>';
+
+					row.cells[3].innerHTML = '<a href="#" onclick="return f_share(' + result.id + ');">Share</a> <a href="#" onclick="return f_delete(' + result.id + ');">Delete</a>';
+
+					row.cells[4].id = "desc" + result.id;
+					row.cells[4].onclick = function() { f_desc(this, result.id); };
+					row.cells[4].textContent = result.desc;
+					row.cells[4].className = 'command';
+
+					row.cells[5].textContent = result.date;
+
+					row.cells[6].innerHTML = '<span id="expire'+result.id+'">'+escapeHtml(result.expire)+'</span>';
+					row.cells[6].onclick = function() { f_expire_cal(this, result.id); };
+					row.cells[6].className = 'command';
+
 					xhttp[j] = null;
 				}
 			}
@@ -911,62 +1014,65 @@ function f_upload(uid, id, file, k, file_pos, fid)
 		xhr.onreadystatechange =  function(uidd, idd, f, j, fp) {
 			return function(e) {
 			if(this.readyState == 4) {
+				var result;
 				if(this.status == 200)
 				{
-					//alert(this.responseText);
-					var result = JSON.parse(this.responseText);
-					if(result.code)
+					try
 					{
-						gi("desc" + j).textContent =  result.status;
-						gi("button" + j).textContent = "";
-						//var row = gi("upload"+j);
-						//row.parentNode.removeChild(row);
-						xhttp[j] = null;
+						result = JSON.parse(this.responseText);
 					}
-					else
+					catch(e)
 					{
-						fp += part_size;
-						if((f.size > 268435456) && (fp < f.size))
-						{
-							f_upload(uidd, idd, f, j, fp, result.id);
-						}
-						else
-						{
-							var row = gi("upload" + j);
-							row.id = "row" + result.id;
-
-							row.cells[0].innerHTML = '<input type="checkbox" name="check" value="' + result.id + '"/>'
-
-							row.cells[1].id = "fname" + result.id;
-							row.cells[1].onclick = function() { f_rename(this, result.id); };
-							row.cells[1].textContent = result.name;
-							row.cells[1].className = 'command';
-
-							row.cells[2].innerHTML = '<a href="/zxs.php?action=download&id=' + result.id + '">' + formatbytes(result.size, 2) + '</a>';
-
-							row.cells[3].innerHTML = '<a href="#" onclick="return f_share(' + result.id + ');">Share</a> <a href="#" onclick="return f_delete(' + result.id + ');">Delete</a>';
-
-							row.cells[4].id = "desc" + result.id;
-							row.cells[4].onclick = function() { f_desc(this, result.id); };
-							row.cells[4].textContent = result.desc;
-							row.cells[4].className = 'command';
-
-							row.cells[5].textContent = result.date;
-
-							row.cells[6].innerHTML = '<span id="expire'+result.id+'">'+escapeHtml(result.expire)+'</span>';
-							row.cells[6].onclick = function() { f_expire_cal(this, result.id); };
-							row.cells[6].className = 'command';
-							xhttp[j] = null;
-						}
+						result = {code: 1, status: "Response: "+this.responseText};
 					}
 				}
 				else
 				{
-					gi("desc" + j).textContent = "Upload failed (code: " + this.status + ")";
+					result = {code: 1, status: "AJAX error code: "+this.status};
+				}
+				if(result.code)
+				{
+					gi("desc" + j).textContent =  result.status;
 					gi("button" + j).textContent = "";
-					//var row = gi("upload" + j);
+					//var row = gi("upload"+j);
 					//row.parentNode.removeChild(row);
 					xhttp[j] = null;
+				}
+				else
+				{
+					fp += part_size;
+					if((f.size > 268435456) && (fp < f.size))
+					{
+						f_upload(uidd, idd, f, j, fp, result.id);
+					}
+					else
+					{
+						var row = gi("upload" + j);
+						row.id = "row" + result.id;
+
+						row.cells[0].innerHTML = '<input type="checkbox" name="check" value="' + result.id + '"/>'
+
+						row.cells[1].id = "fname" + result.id;
+						row.cells[1].onclick = function() { f_rename(this, result.id); };
+						row.cells[1].textContent = result.name;
+						row.cells[1].className = 'command';
+
+						row.cells[2].innerHTML = '<a href="/zxs.php?action=download&id=' + result.id + '">' + formatbytes(result.size, 2) + '</a>';
+
+						row.cells[3].innerHTML = '<a href="#" onclick="return f_share(' + result.id + ');">Share</a> <a href="#" onclick="return f_delete(' + result.id + ');">Delete</a>';
+
+						row.cells[4].id = "desc" + result.id;
+						row.cells[4].onclick = function() { f_desc(this, result.id); };
+						row.cells[4].textContent = result.desc;
+						row.cells[4].className = 'command';
+
+						row.cells[5].textContent = result.date;
+
+						row.cells[6].innerHTML = '<span id="expire'+result.id+'">'+escapeHtml(result.expire)+'</span>';
+						row.cells[6].onclick = function() { f_expire_cal(this, result.id); };
+						row.cells[6].className = 'command';
+						xhttp[j] = null;
+					}
 				}
 			}
 		}}(uid, id, file, k, file_pos);
@@ -1107,21 +1213,29 @@ function f_expire(id, date)
 		xhr.open("post", "/zxsa.php?action=expire&id="+id, true);
 		xhr.onreadystatechange = function(e) {
 			if(this.readyState == 4) {
+				var result;
 				if(this.status == 200)
 				{
-					var result = JSON.parse(this.responseText);
-					if(result.code)
+					try
 					{
-						f_popup("Error", result.status);
+						result = JSON.parse(this.responseText);
 					}
-					else
+					catch(e)
 					{
-						gi("expire"+id).textContent = result.date;
+						result = {code: 1, status: "Response: "+this.responseText};
 					}
 				}
 				else
 				{
-					f_popup("Error", "failure");
+					result = {code: 1, status: "AJAX error code: "+this.status};
+				}
+				if(result.code)
+				{
+					f_popup("Error", result.status);
+				}
+				else
+				{
+					gi("expire"+id).textContent = result.date;
 				}
 			}
 		};
