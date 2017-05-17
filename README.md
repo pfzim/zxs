@@ -1,9 +1,9 @@
 # Simple web service for sharing file (like sendspace, rapidshare and etc.)
 
-Demo: (http://pfzim.rf.gd/)
-Login: admin
-Password: admin
-
+Demo: http://pfzim.rf.gd/<br />
+Login: admin<br />
+Password: admin<br />
+<br />	
 ![screenshot](https://raw.githubusercontent.com/pfzim/other/master/Screenshot_3.png)
 
 ![screenshot](https://raw.githubusercontent.com/pfzim/other/master/Screenshot_4.png)
