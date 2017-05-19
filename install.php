@@ -703,6 +703,11 @@ EOT;
 				background-color: #f2dede;
 				border-color: #ebccd1
 			}
+			.alert-success{
+				color: #3c763d;
+				background-color: #dff0d8;
+				border-color: #d6e9c6
+			}
 			.container:after,
 			.container:before,
 			.form-horizontal .form-group:after,
@@ -741,48 +746,49 @@ EOT;
 				};
 			}
 
-			function f_xhr() {
-			  if (typeof XMLHttpRequest === 'undefined') {
-				XMLHttpRequest = function() {
-				  try { return new ActiveXObject("Msxml2.XMLHTTP.6.0"); }
-					catch(e) {}
-				  try { return new ActiveXObject("Msxml2.XMLHTTP.3.0"); }
-					catch(e) {}
-				  try { return new ActiveXObject("Msxml2.XMLHTTP"); }
-					catch(e) {}
-				  try { return new ActiveXObject("Microsoft.XMLHTTP"); }
-					catch(e) {}
-				  throw new Error("This browser does not support XMLHttpRequest.");
-				};
-			  }
-			  return new XMLHttpRequest();
+			function f_xhr()
+			{
+				try { return new XMLHttpRequest(); } catch(e) {}
+				try { return new ActiveXObject("Msxml3.XMLHTTP"); } catch(e) {}
+				try { return new ActiveXObject("Msxml2.XMLHTTP.6.0"); } catch(e) {}
+				try { return new ActiveXObject("Msxml2.XMLHTTP.3.0"); } catch(e) {}
+				try { return new ActiveXObject("Msxml2.XMLHTTP"); } catch(e) {}
+				try { return new ActiveXObject("Microsoft.XMLHTTP"); } catch(e) {}
+				console.log("ERROR: XMLHttpRequest undefined");
+				return null;
 			}
 
-			function f_post(id, action, data)
+			function f_post(_id, action, data)
 			{
 				var xhr = f_xhr();
-				if (xhr)
+				var id = _id;
+				if(xhr)
 				{
+					gi("result_"+id).textContent = 'Loading...';
+					gi("result_"+id).style.display = 'block';
+					
 					xhr.open("post", "install.php?action="+action, true);
-					xhr.onreadystatechange = function(e) {
-						if(this.readyState == 4) {
+					xhr.onreadystatechange = function()
+					{
+						if(xhr.readyState == 4)
+						{
 							var result;
-							if(this.status == 200)
+							if(xhr.status == 200)
 							{
 								try
 								{
-									result = JSON.parse(this.responseText);
+									result = JSON.parse(xhr.responseText);
 								}
 								catch(e)
 								{
-									result = {code: 1, status: "Response: "+this.responseText};
+									result = {code: 1, status: "Response: "+xhr.responseText};
 								}
 							}
 							else
 							{
-								result = {code: 1, status: "AJAX error code: "+this.status};
+								result = {code: 1, status: "AJAX error code: "+xhr.status};
 							}
-							
+
 							if(result.code)
 							{
 								gi("result_"+id).classList.remove('alert-success');
@@ -806,8 +812,6 @@ EOT;
 
 			function f_check_db_conn(id)
 			{
-				gi("result_"+id).textContent = 'Loading...';
-				gi("result_"+id).style.display = 'block';
 				f_post(id, 'check_db',
 					'host='+encodeURIComponent(gi('host').value)+'&user='+encodeURIComponent(gi('user_root').value)+'&pwd='+encodeURIComponent(gi('pwd_root').value)
 				);
@@ -815,8 +819,6 @@ EOT;
 
 			function f_create_db(id)
 			{
-				gi("result_"+id).textContent = 'Loading...';
-				gi("result_"+id).style.display = 'block';
 				f_post(id, 'create_db',
 					'host='+encodeURIComponent(gi('host').value)+'&user='+encodeURIComponent(gi('user_root').value)+'&pwd='+encodeURIComponent(gi('pwd_root').value)
 					+'&db='+encodeURIComponent(gi('db_scheme').value)
@@ -825,8 +827,6 @@ EOT;
 
 			function f_create_tables(id)
 			{
-				gi("result_"+id).textContent = 'Loading...';
-				gi("result_"+id).style.display = 'block';
 				f_post(id, 'create_tables',
 					'host='+encodeURIComponent(gi('host').value)+'&user='+encodeURIComponent(gi('user_root').value)+'&pwd='+encodeURIComponent(gi('pwd_root').value)
 					+'&db='+encodeURIComponent(gi('db_scheme').value)
@@ -835,8 +835,6 @@ EOT;
 
 			function f_create_db_user(id)
 			{
-				gi("result_"+id).textContent = 'Loading...';
-				gi("result_"+id).style.display = 'block';
 				f_post(id, 'create_db_user',
 					'host='+encodeURIComponent(gi('host').value)+'&user='+encodeURIComponent(gi('user_root').value)+'&pwd='+encodeURIComponent(gi('pwd_root').value)
 					+'&dbuser='+encodeURIComponent(gi('db_user').value)+'&dbpwd='+encodeURIComponent(gi('db_pwd').value)
@@ -845,8 +843,6 @@ EOT;
 
 			function f_grant_access(id)
 			{
-				gi("result_"+id).textContent = 'Loading...';
-				gi("result_"+id).style.display = 'block';
 				f_post(id, 'grant_access',
 					'host='+encodeURIComponent(gi('host').value)+'&user='+encodeURIComponent(gi('user_root').value)+'&pwd='+encodeURIComponent(gi('pwd_root').value)
 					+'&db='+encodeURIComponent(gi('db_scheme').value)+'&dbuser='+encodeURIComponent(gi('db_user').value)+'&dbpwd='+encodeURIComponent(gi('db_pwd').value)
@@ -855,8 +851,6 @@ EOT;
 
 			function f_check_mail(id)
 			{
-				gi("result_"+id).textContent = 'Loading...';
-				gi("result_"+id).style.display = 'block';
 				var ms = gi("mail_secure");
 				f_post(id, "check_mail",
 					'mailhost='+encodeURIComponent(gi('mail_host').value)+'&mailport='+encodeURIComponent(gi('mail_port').value)+'&mailuser='+encodeURIComponent(gi('mail_user').value)+'&mailpwd='+encodeURIComponent(gi('mail_pwd').value)
@@ -867,8 +861,6 @@ EOT;
 
 			function f_create_admin_account(id)
 			{
-				gi("result_"+id).textContent = 'Loading...';
-				gi("result_"+id).style.display = 'block';
 				f_post(id, 'add_user',
 					'host='+encodeURIComponent(gi('host').value)+'&dbuser='+encodeURIComponent(gi('db_user').value)+'&dbpwd='+encodeURIComponent(gi('db_pwd').value)
 					+'&db='+encodeURIComponent(gi('db_scheme').value)+'&adminuser='+encodeURIComponent(gi('admin_user').value)+'&adminpwd='+encodeURIComponent(gi('admin_pwd').value)
@@ -878,8 +870,6 @@ EOT;
 
 			function f_save_config(id)
 			{
-				gi("result_"+id).textContent = 'Loading...';
-				gi("result_"+id).style.display = 'block';
 				var ms = gi("mail_secure");
 				f_post(id, "save_config",
 					'host='+encodeURIComponent(gi('host').value)+'&db='+encodeURIComponent(gi('db_scheme').value)+'&dbuser='+encodeURIComponent(gi('db_user').value)+'&dbpwd='+encodeURIComponent(gi('db_pwd').value)
@@ -892,8 +882,6 @@ EOT;
 
 			function f_remove_self(id)
 			{
-				gi("result_"+id).textContent = 'Loading...';
-				gi("result_"+id).style.display = 'block';
 				f_post(id, "remove_self", 'goodbay=script');
 			}
 		</script>
