@@ -6,8 +6,6 @@
 		</div>
 		<div id="fade" class="black_overlay"></div>
 
-		<?php if($uid) { ?>
 		<div id="codedby"><small>Coded by Dmitry V. Zimin. Project on <a href="https://github.com/pfzim/zxs">GitHub</a></small></div>		
-		<?php } ?>
 	</body>
 </html>
