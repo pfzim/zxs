@@ -9,7 +9,7 @@
 			</tr>
 			</thead>
 			<tbody>
-		<?php $i = 0; if($res !== FALSE) foreach($res as $row) { $i++; ?>
+		<?php $i = 0; if($res !== FALSE) foreach($res as &$row) { $i++; ?>
 		<tr>
 			<td><?php eh($i);?></td>
 			<td><?php eh($row[0]);?></td>

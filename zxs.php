@@ -27,7 +27,7 @@ function delete_expired($db)
 {
 	if($db->select("SELECT m.`id` FROM `zxs_files` AS m WHERE (m.`deleted` = 0 AND m.`type` = 0 AND m.`expire` IS NOT NULL AND m.`expire` < CURDATE()) OR (m.`deleted` = 1 AND m.`type` = 3 AND m.`date` IS NOT NULL AND DATE_ADD(m.`date`, INTERVAL 3 DAY) < CURDATE())"))
 	{
-		foreach($db->data as $row)
+		foreach($db->data as &$row)
 		{
 			$db->put(rpv("UPDATE `zxs_files` SET `type` = 0, `deleted` = 1 WHERE `id` = # LIMIT 1", $row[0]));
 			unlink(UPLOAD_DIR."/f".$row[0]);

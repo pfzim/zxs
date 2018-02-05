@@ -23,7 +23,7 @@ function update_link($db, $lid)
 
 	if($db->select(rpv("SELECT m.`fid`, j1.`uid` FROM `zxs_link_files` AS m LEFT JOIN `zxs_links` AS j1 ON j1.`id` = m.`lid` LEFT JOIN `zxs_files` AS j2 ON j2.`id` = m.`fid` WHERE m.`lid` = # AND m.`pid` = 0 AND j2.`type` = 1 AND j1.`deleted` = 0 AND j2.`deleted` = 0", $lid)))
 	{
-		foreach($db->data as $row)
+		foreach($db->data as &$row)
 		{
 			share_subdir($db, $row[1], $lid, $row[0]);
 		}
@@ -34,7 +34,7 @@ function share_subdir($db, $uid, $lid, $id)
 {
 	if($db->select(rpv("SELECT m.`id`, m.`type` FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`pid` = # AND m.`deleted` = 0", $uid, $id)))
 	{
-		foreach($db->data as $row)
+		foreach($db->data as &$row)
 		{
 			$db->put(rpv("INSERT INTO `zxs_link_files` (`lid`, `fid`, `pid`) VALUES (#, #, #)", $lid, $row[0], $id));
 			if($row[1])
@@ -49,7 +49,7 @@ function delete_subdir($db, $uid, $id)
 {
 	if($db->select(rpv("SELECT m.`id`, m.`type` FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`pid` = # AND m.`deleted` = 0", $uid, $id)))
 	{
-		foreach($db->data as $row)
+		foreach($db->data as &$row)
 		{
 			$db->put(rpv("UPDATE `zxs_files` SET `deleted` = 1 WHERE `uid` = # AND `id` = # LIMIT 1", $uid, $row[0]));
 			if($row[1])
@@ -167,7 +167,7 @@ function delete_subdir($db, $uid, $id)
 				exit;
 			}
 
-			foreach($_POST['fid'] as $id)
+			foreach($_POST['fid'] as &$id)
 			{
 				if($db->select(rpv("SELECT m.`type` FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`id` = # AND m.`deleted` = 0 LIMIT 1", $uid, $id)))
 				{
@@ -333,7 +333,7 @@ function delete_subdir($db, $uid, $id)
 
 			$i = 0;
 			$desc = '';
-			foreach($_POST['fid'] as $id)
+			foreach($_POST['fid'] as &$id)
 			{
 				if($db->select(rpv("SELECT m.`type`, m.`name` FROM `zxs_files` AS m WHERE m.`uid` = # AND m.`id` = # AND m.`deleted` = 0 LIMIT 1", $uid, $id)))
 				{
@@ -398,7 +398,7 @@ function delete_subdir($db, $uid, $id)
 
 			if($db->select(rpv("SELECT m.`fid`, j1.`name`, j1.`type`, j1.`size`, j1.`desc`, DATE_FORMAT(j1.`date`, '%d.%m.%Y'), DATE_FORMAT(j1.`expire`, '%d.%m.%Y') FROM zxs_link_files AS m LEFT JOIN zxs_files AS j1 ON j1.`id` = m.`fid` WHERE j1.`uid` = # AND m.`lid` = # AND m.`pid` = # AND j1.`deleted` = 0 ORDER BY j1.`type` DESC, j1.`name`", $uid, $id, $pid)))
 			{
-				foreach($db->data as $row)
+				foreach($db->data as &$row)
 				{
 					if(!empty($list))
 					{
