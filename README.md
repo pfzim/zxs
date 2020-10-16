@@ -1,4 +1,4 @@
-# Simple web service for sharing file (like sendspace, rapidshare and etc.)
+# [Simple web service for sharing file (like sendspace, rapidshare and etc.)](https://github.com/pfzim/zxs/)
 
 Demo: http://pfzim.rf.gd/<br />
 Login: admin<br />
