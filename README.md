@@ -33,6 +33,3 @@ Password: admin<br />
 ![screenshot](https://raw.githubusercontent.com/pfzim/other/master/Screenshot_5.png)
 
 ![screenshot](https://raw.githubusercontent.com/pfzim/other/master/Screenshot_8.png)
-
-
-Dmitry V. Zimin <pfzim@mail.ru>
